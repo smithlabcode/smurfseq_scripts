@@ -7,6 +7,11 @@
 \title{Data analysis procedure for SMURF-seq reads}
 \date{}
 
+
+\newenvironment{cmd}
+{\par \noindent \ttfamily \$}
+{\par \noindent}
+
 \begin{document}
 \maketitle
 \tableofcontents
@@ -16,8 +21,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newpage
 \section{Introduction}
-SMURF-seq is a protocol to efficiently sequence short DNA molecules on 
-a long-read sequencer by randomly ligating them to form 
+SMURF-seq is a protocol to efficiently sequence short DNA molecules on
+a long-read sequencer by randomly ligating them to form
 long molecules.
 %
 The SMURF-seq protocol involves cleaving the genomic DNA into short
@@ -40,26 +45,26 @@ sequenced read or the mapped fragments.
 %%%%% Mapping SMURF-seq reads                                              %%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Mapping SMURF-seq reads}
-At this point, we assume that the reads generated from a 
+At this point, we assume that the reads generated from a
 SMURF-seq experiment are base-called and are in a fastq or
 fasta file.
 
-The reads sequenced using SMURF-seq protocol needs to be mapped to the 
+The reads sequenced using SMURF-seq protocol needs to be mapped to the
 reference genome to identify the fragment locations. The reads can be
 aligned leveraging long-read mapping tools that are designed for split-read
-alignment. 
+alignment.
 
-We present the option of aligning SMURF-seq reads using BWA-MEM 
+We present the option of aligning SMURF-seq reads using BWA-MEM
 \cite{li2013aligning}, Minimap2 \cite{li2018minimap2}, and LAST
-\cite{kielbasa2011adaptive}, and we present several parameter 
+\cite{kielbasa2011adaptive}, and we present several parameter
 recommendations for each tool.
- 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Prerequisites}
-\paragraph{Reference genome:} The CNV analysis procedure described in 
-section \ref{cnv} makes use of the human reference genome build 
-\texttt{hg19}, and thus this build has to used to generate CNV profiles 
-using the procedure described here. However, other reference genomes 
+\paragraph{Reference genome:} The CNV analysis procedure described in
+section \ref{cnv} makes use of the human reference genome build
+\texttt{hg19}, and thus this build has to used to generate CNV profiles
+using the procedure described here. However, other reference genomes
 can be utilized if the user does not used the procedure in \ref{cnv}
 
 \paragraph{Software required:}
@@ -69,23 +74,43 @@ can be utilized if the user does not used the procedure in \ref{cnv}
 \end{enumerate}
 
 \paragraph{Environment variables:}
-    
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Mapping SMURF-seq reads to the reference genome}
 
 A user has an option of using either of the tools listed above following
-the procedure in section \ref{bwa}, \ref{minimap}, or \ref{last} 
-respectively. We recommend using BWA-MEM as this produced higher 
+the procedure in section \ref{bwa}, \ref{minimap}, or \ref{last}
+respectively. We recommend using BWA-MEM as this produced higher
 fragment counts.
 
 \subsubsection{Mapping SMURF-seq reads with BWA-MEM}
 \label{bwa}
 \paragraph{Reference genome index creation}
+The reference genome index in created using the command
+\begin{cmd}
+  bwa index <index file>
+\end{cmd}
+The index occupies approximately xxx GB.
 
 \paragraph{Aligning SMURF-seq reads}
+SMURF-seq reads are mapped to the reference genome using:
+\begin{cmd}
+  bwa mem -x ont2d -k 11 -W 5 -A 1 -B 2 -O 0 -E 2 -t <threads> $\backslash$ \\
+  <index> <reads>
+\end{cmd}
+or
+\begin{cmd}
+  bwa mem -x ont2d -A 1 -B 2 -O 0 -E 2 -t <threads> $\backslash$ \\
+  <index> <reads>
+\end{cmd}
+
+The above commands can also be run using the script
+
+
 
 \paragraph{Parameter recommendations}
+
 
 
 \subsubsection{Mapping SMURF-seq reads with Minimap2}
