@@ -3,14 +3,20 @@
 \usepackage{fullpage,times}
 \usepackage{graphicx}
 \usepackage{float}
+\usepackage[hidelinks]{hyperref}
 
 \title{Data analysis procedure for SMURF-seq reads}
 \date{}
 
-
 \newenvironment{cmd}
-{\par \noindent \ttfamily \$}
-{\par \noindent}
+{\list{}{
+    \parsep=0em
+    \itemindent=17pt
+    \listparindent=50pt
+    \leftmargin=0in
+    \rightmargin=0in
+  }\item[] \ttfamily \$}
+{\endlist}
 
 \begin{document}
 \maketitle
@@ -74,6 +80,11 @@ can be utilized if the user does not used the procedure in \ref{cnv}
 \end{enumerate}
 
 \paragraph{Environment variables:}
+Required only when using the provided scripts for mapping SMURF-seq reads.
+The variable \texttt{MAPPER} can be set using:
+\begin{cmd}
+  export MAPPER=<path to mapping tool>
+\end{cmd}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -85,31 +96,54 @@ respectively. We recommend using BWA-MEM as this produced higher
 fragment counts.
 
 \subsubsection{Mapping SMURF-seq reads with BWA-MEM}
-\label{bwa}
-\paragraph{Reference genome index creation}
-The reference genome index in created using the command
-\begin{cmd}
-  bwa index <index file>
-\end{cmd}
-The index occupies approximately xxx GB.
+The download and install instructions for BWA can be found at:
+\url{https://github.com/lh3/bwa}
 
-\paragraph{Aligning SMURF-seq reads}
-SMURF-seq reads are mapped to the reference genome using:
+\label{bwa}
+\paragraph{Reference genome index creation:}
+The reference genome index in created using the command:
 \begin{cmd}
-  bwa mem -x ont2d -k 11 -W 5 -A 1 -B 2 -O 0 -E 2 -t <threads> $\backslash$ \\
+  bwa index <genome file>
+\end{cmd}
+The index occupies approximately xxx GB for hg19.
+
+\paragraph{Parameter recommendations:}
+The default parameter to map nanopore reads using BWA-MEM is \texttt{-x~ont2d}.
+SMURF-seq reads can be aligned using just this option, however, the fragment
+lengths were longer than optimal. We recommend using the parameters
+\texttt{-A 1 -B 2 -O 0 -E 2} in addition to \texttt{-x~ont2d}. These
+parameters constrain the growth of a fragment and their lengths were close to
+optimal. To further increase the number of fragments obtained, at the
+expense of a longer runtime, the minimum seed length (\texttt{k}) and the
+minimum chain weight (\texttt{W}) can be lowered.
+
+
+\paragraph{Aligning SMURF-seq reads:}
+SMURF-seq reads are mapped to the reference genome using for fast mapping:
+\begin{cmd}
+  bwa mem -x ont2d -A 1 -B 2 -O 0 -E 2 -t <threads> $\backslash$ \par
   <index> <reads>
 \end{cmd}
+or using to obtain a higher fragment count:
+\begin{cmd}
+  bwa mem -x ont2d -k 11 -W 5 -A 1 -B 2 -O 0 -E 2 -t <threads> $\backslash$
+  \par <index> <reads>
+\end{cmd}
+
+\noindent
+The above commands can also be run using the scripts:
+\begin{cmd}
+  ./map/smurfseq\_BWA\_fast.sh <index> <reads>
+\end{cmd}
+
+\noindent
 or
 \begin{cmd}
-  bwa mem -x ont2d -A 1 -B 2 -O 0 -E 2 -t <threads> $\backslash$ \\
-  <index> <reads>
+  ./map/smurfseq\_BWA\_frags.sh <index> <reads>
 \end{cmd}
-
-The above commands can also be run using the script
-
-
-
-\paragraph{Parameter recommendations}
+\noindent
+respectively. These scripts require environment variable \texttt{MAPPER}
+set to the location of BWA.
 
 
 
