@@ -9,30 +9,87 @@
 
 \begin{document}
 \maketitle
+\tableofcontents
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%% Intro                                                                %%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
 \section{Introduction}
-At this point, we assume that the reads generated from a 
-SMURF-seq experiment are base-called and are in a fastq or
-fasta file.
+SMURF-seq is a protocol to efficiently sequence short DNA molecules on 
+a long-read sequencer by randomly ligating them to form 
+long molecules.
+%
+The SMURF-seq protocol involves cleaving the genomic DNA into short
+fragments. These fragmented molecules are then randomly ligated back
+together to form artificial, long DNA molecules. The long re-ligated
+molecules are sequenced following the standard MinION library
+preparation protocol. After (or possibly concurrent with) sequencing,
+the SMURF-seq reads are mapped to the reference genome in a way that
+simultaneously splits them into their constituent fragments, each
+aligning to a distinct location in the genome (for most fragments).
+
+%
+This manual explains how to map SMURF-seq reads, generate copy-number profiles
+from the mapped fragments, and perform additional optional analysis of the
+sequenced read or the mapped fragments.
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%% Mapping SMURF-seq reads                                              %%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Mapping SMURF-seq reads}
+At this point, we assume that the reads generated from a 
+SMURF-seq experiment are base-called and are in a fastq or
+fasta file.
+
+The reads sequenced using SMURF-seq protocol needs to be mapped to the 
+reference genome to identify the fragment locations. The reads can be
+aligned leveraging long-read mapping tools that are designed for split-read
+alignment. 
+
+We present the option of aligning SMURF-seq reads using BWA-MEM, 
+Minimap2, and LAST, and we present several parameter recommendations for
+each tool. A user has an option of using either of these tools following
+the procedure in section aaa, bbb, or ccc. We recommend using BWA-MEM as
+this produced higher fragment counts.
+
+\subsection{Prerequisites}
+\paragraph{Software required:}
+
 
 \paragraph{Environment variables:}
 
-\subsection{Prerequisites}
 
-\subsection{Mapping SMURF-seq reads with BWA-MEM}
 
-\subsection{Mapping SMURF-seq reads with Minimap2}
+\subsection{Mapping SMURF-seq reads to the reference genome}
 
-\subsection{Mapping SMURF-seq reads with LAST}
+\subsubsection{Mapping SMURF-seq reads with BWA-MEM}
+\paragraph{Reference genome index creation}
+
+\paragraph{Aligning SMURF-seq reads}
+
+\paragraph{Parameter recommendations}
+
+
+\subsubsection{Mapping SMURF-seq reads with Minimap2}
+\paragraph{Reference genome index creation}
+
+\paragraph{Aligning SMURF-seq reads}
+
+\paragraph{Parameter recommendations}
+
+
+
+\subsubsection{Mapping SMURF-seq reads with LAST}
+\paragraph{Reference genome index creation}
+
+\paragraph{Aligning SMURF-seq reads}
+
+\paragraph{Parameter recommendations}
+
+\subsection{Generating mapping statistics}
 
 \subsection{Test data}
 
@@ -43,8 +100,11 @@ fasta file.
 \section{Generation of copy-number profiles}
 
 \subsection{Prerequisites}
+\paragraph{Software required:}
 
 \subsection{Generating CNV profiles}
+
+\paragraph{Generating higher-resolution CNV profiles}
 
 \subsection{Test data}
 
