@@ -191,6 +191,22 @@ location of Minimap2.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Generating mapping statistics}
+After the reads are aligned, the number of fragments generated can be 
+determined using:
+\begin{cmd}
+  samtools flagstat <mapped file>.sam
+\end{cmd}
+
+The number corresponding to the line ``mapped'' in the output of the above
+command is the number of fragments generated 
+mapping. Refer to section \ref{misc} for optional additional analysis of
+mapped fragments.
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Mapping subsets of reads in parallel}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Test data}
@@ -216,6 +232,7 @@ location of Minimap2.
 %%%%% Misc. analysis                                                       %%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Miscellaneous analysis of sequenced reads and mapped fragments}
+\label{misc}
 
 \subsection{Read length distribution}
 
