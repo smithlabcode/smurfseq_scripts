@@ -162,7 +162,7 @@ is much larger than when using the default parameter. As explained below,
 this option produces a significantly higher fragment count.
 
 \paragraph{Parameter recommendations:}
-Minmap2 produces higher fragment counts when the window size (\texttt{w}) 
+Minmap2 produces higher fragment counts when the window size (\texttt{w})
 is lowered to 1 and the chain weight (\texttt{m}) to 10 than using the
 default parameters. However, lowering the window size increases the
 genome index size.
@@ -196,19 +196,19 @@ The index occupies approximately 15.3GB for hg19.
 
 \paragraph{Parameter recommendations:}
 The genome index is created using the seed patter NEAR (1111110) which is
-recommended for scheme for finding short-and-strong matches 
+recommended for scheme for finding short-and-strong matches
 (\url{http://last.cbrc.jp/doc/last-seeds.html}). The reads are then aligned
-to the reference genome using the default parameters. 
+to the reference genome using the default parameters.
 
-\paragraph{Aligning SMURF-seq reads:} 
+\paragraph{Aligning SMURF-seq reads:}
 SMURF-seq reads are aligned to the reference genome using:
 \begin{cmd}
-  lastal -Q0 -P<threads> <index> <reads> | last-split | 
-    \par maf-convert sam > <outfile>.sam  
+  lastal -Q0 -P<threads> <index> <reads> | last-split |
+    \par maf-convert sam > <outfile>.sam
 \end{cmd}
 or using the script:
 \begin{cmd}
-  ./map/smurfseq\_last.sh <index> <reads> 
+  ./map/smurfseq\_last.sh <index> <reads>
 \end{cmd}
 This script requires environment variable \texttt{MAPPER} set to the
 location of LAST.
@@ -218,14 +218,14 @@ location of LAST.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Generating mapping statistics}
-After the reads are aligned, the number of fragments generated can be 
+After the reads are aligned, the number of fragments generated can be
 determined using:
 \begin{cmd}
   samtools flagstat <mapped file>.sam
 \end{cmd}
 
 The number corresponding to the line ``mapped'' in the output of the above
-command is the number of fragments generated 
+command is the number of fragments generated
 mapping. Refer to section \ref{misc} for optional additional analysis of
 mapped fragments.
 
@@ -244,15 +244,100 @@ mapped fragments.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Generation of copy-number profiles}
 \label{cnv}
+CNV profiles were generated using the procedure described in
+\cite{baslan2012genome,kendall2014computational} with the
+modification employed in
+\cite{gerdtsson2018multiplex,malihi2018clonal}.
+Briefly, the
+human reference genome (hg19) was split into 5k (20k or 50k) bins
+containing the an equal number of uniquely mappable locations and
+the bin counts were determined using uniquely mapped fragments.
+Bins with spuriously high counts (`bad bins', typically around
+centromeric and telomeric regions) were masked for
+downstream analysis \cite{kendall2014computational}.
+This procedure normalizes bin counts for biases correlated with GC
+content by fitting a LOWESS curve to the GC content by bin count,
+and subtracting the LOWESS estimate from each bin
+\cite{kendall2014computational}.
+Circular binary segmentation (CBS) {\cite{olshen2004circular}},
+implemented in DNAcopy {\cite{seshan2010dnacopy}} package, then
+identifies breakpoints in the normalized bin counts.
+Following \cite{gerdtsson2018multiplex,malihi2018clonal}, after CBS,
+spurious segmentation calls were removed.
+
+
 
 \subsection{Prerequisites}
 \paragraph{Software required:}
+\begin{enumerate}
+  \item python
+  \item R
+\end{enumerate}
+
+\paragraph{Libraries required:}
+\begin{enumerate}
+  \item DNAcopy (R package) \cite{seshan2010dnacopy}
+\end{enumerate}
 
 \subsection{Generating CNV profiles}
+At this point, we assume that the sequenced SMURF-seq reads are mapped to the
+reference genome and the alignments produced are in a sam file.
+Generating CNV profiles from a sam file involves getting the uniquely aligned
+fragment, generating the number of fragments that are aligned to each bin, and
+generating the segmented CNV profiles using DNAcopy. These step are described
+below.
 
-\paragraph{Generating higher-resolution CNV profiles}
+\paragraph{Getting uniquely aligned fragments}
+After alignment, some fragments may be ambiguously aligned, i.e. they are
+equally likely aligned to two or more locations on the reference genome.
+Since the true location of such a fragment cannot be determined they are
+removed from copy number analysis.
+All fragments aligned with a mapping quality (MAPQ in the sam file) greater
+than 0 are considered as uniquely aligned for copy number analysis.
+Note that different mappers use different metrics to determine MAPQ. BWA-MEM
+sets MAPQ to 0 if there are multiple alignments with the same alignment score
+or if an alignment has a low number of matches and the alignment score of
+the second best alignment is close to the best alignment.
 
-\subsection{Test data}
+Uniquely aligned fragments can be generated using the command:
+\begin{cmd}
+  ./cnv/get\_unique\_maps.py <aligned>.sam > <alinged>.unique.sam
+\end{cmd}
+
+\paragraph{Generating bin counts}
+The next step in CNV analysis is to determine the number of fragments
+aligned to each bin on the reference genome. This is done with the
+command:
+\begin{cmd}
+  ./cnv/get\_bin\_counts.py <alinged>.unique.sam <chrom sizes>
+    \par <bin boundaries> <sample name>.bincount.txt <sample name>.stats.txt
+\end{cmd}
+
+The files \texttt{<chrom sizes>} and \texttt{<bin boundaries>} contain the
+length of hg19 chromosomes and the bin boundaries to determined the counts
+respectively. These files are located in the the folders cnv/5k, cnv/20k
+and cnv/50k for 5k, 20k, and 50k bin resolutions respectively.
+
+\paragraph{Generating copy number profiles}
+Finally, the CNV profiles are generated by segmenting the ratio to mean of
+the bin counts. The profile can be obtained using:
+\begin{cmd}
+  R CMD BATCH --args <sample name>.bincount.txt <sample name>
+    \par <GC content>.txt <bad bins>.txt cnv/cbs.r <outfile>.txt
+\end{cmd}
+
+\paragraph{Scripts to generate CNV profiles}
+After alignment, CNV profiles can be directly generated using the script:
+\begin{cmd}
+  ./cnv/cnv-<5k/20k/50k>.sh <aligned>.sam <sample name>
+\end{cmd}
+This script executes the three steps described above to generate the profiles.
+The script requires the environment variable \texttt{SMURFDIR} set to the
+location of the smurfseq-scripts repository, using the command:
+\begin{cmd}
+  export SMURFDIR=<path to smurfseq-scripts dir>
+\end{cmd}
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -267,6 +352,7 @@ mapped fragments.
 
 \subsection{Closeness to RE sites}
 
+\subsection{Extracting unaligned bases from reads}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%% References                                                           %%%%%
