@@ -101,11 +101,11 @@ The download and install instructions for BWA can be found at:
 
 \label{bwa}
 \paragraph{Reference genome index creation:}
-The reference genome index in created using the command:
+The reference genome index is created using the command:
 \begin{cmd}
   bwa index <genome file>
 \end{cmd}
-The index occupies approximately xxx GB for hg19.
+The index occupies approximately 5.14 GB for hg19.
 
 \paragraph{Parameter recommendations:}
 The default parameter to map nanopore reads using BWA-MEM is \texttt{-x~ont2d}.
@@ -127,7 +127,7 @@ SMURF-seq reads are mapped to the reference genome using for fast mapping:
 or using to obtain a higher fragment count:
 \begin{cmd}
   bwa mem -x ont2d -k 11 -W 5 -A 1 -B 2 -O 0 -E 2 -t <threads> $\backslash$
-  \par <index> <reads>
+  \par <index> <reads> > <outfile>.sam
 \end{cmd}
 The above commands can also be run using the scripts:
 \begin{cmd}
@@ -157,13 +157,13 @@ the command:
 \begin{cmd}
   minimap2 -d -w 1 <index name>.mmi <genome file>
 \end{cmd}
-The index occupies approximately xxx GB for hg19. Note that index size
+The index occupies approximately 28GB for hg19. Note that index size
 is much larger than when using the default parameter. As explained below,
 this option produces a significantly higher fragment count.
 
 \paragraph{Parameter recommendations:}
 Minmap2 produces higher fragment counts when the window size (\texttt{w}) 
-is lowered to 1 and the chain weight (\texttt{10}) to 10 than using the
+is lowered to 1 and the chain weight (\texttt{m}) to 10 than using the
 default parameters. However, lowering the window size increases the
 genome index size.
 
@@ -171,22 +171,49 @@ genome index size.
 \paragraph{Aligning SMURF-seq reads:}
 SMURF-seq reads are aligned to the reference genome using:
 \begin{cmd}
-  minimap2
+  minimap2 -a -w 1 -m 10 -t <threads> <genome> <reads> >
+    \par <outfile>.sam
 \end{cmd}
 or using the script:
 \begin{cmd}
   ./map/smurfseq\_minimap2.sh <genome file> <reads>
 \end{cmd}
-These scripts require environment variable \texttt{MAPPER} set to the
+This script requires environment variable \texttt{MAPPER} set to the
 location of Minimap2.
 
 \subsubsection{Mapping SMURF-seq reads with LAST}
 \label{last}
-\paragraph{Reference genome index creation}
 
-\paragraph{Aligning SMURF-seq reads}
+The download and install instructions for LAST can be found at:
+\url{http://last.cbrc.jp/}
 
-\paragraph{Parameter recommendations}
+\paragraph{Reference genome index creation:}
+The reference genome index is created using the command:
+\begin{cmd}
+  lastdb -uNEAR -R01 <index> <genome>
+\end{cmd}
+The index occupies approximately 15.3GB for hg19.
+
+\paragraph{Parameter recommendations:}
+The genome index is created using the seed patter NEAR (1111110) which is
+recommended for scheme for finding short-and-strong matches 
+(\url{http://last.cbrc.jp/doc/last-seeds.html}). The reads are then aligned
+to the reference genome using the default parameters. 
+
+\paragraph{Aligning SMURF-seq reads:} 
+SMURF-seq reads are aligned to the reference genome using:
+\begin{cmd}
+  lastal -Q0 -P<threads> <index> <reads> | last-split | 
+    \par maf-convert sam > <outfile>.sam  
+\end{cmd}
+or using the script:
+\begin{cmd}
+  ./map/smurfseq\_last.sh <index> <reads> 
+\end{cmd}
+This script requires environment variable \texttt{MAPPER} set to the
+location of LAST.
+
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
