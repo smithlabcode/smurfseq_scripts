@@ -25,4 +25,5 @@ fi
 
 $SMURFDIR/cnv/get_unique_maps.py $1 > $1.unique.sam
 $SMURFDIR/cnv/get_bin_counts.py $1.unique.sam $SMURFDIR/cnv/5k/hg19.chrom.sizes.5k.txt $SMURFDIR/cnv/5k/hg19.bin.boundaries.5k.sorted.txt $2.varbin.5k.txt $2.varbin.5k.stats.txt
-R CMD BATCH '--args '$2.varbin.5k.txt' '$2' '$SMURFDIR/cnv/5k/hg19.new.varbin.gc.content.5k.txt' '$SMURFDIR/cnv/5k/hg19.badbins.5k.txt'' $SMURFDIR/cnv/cbs.r cbs.r.out
+# R CMD BATCH '--args '$2.varbin.5k.txt' '$2' '$SMURFDIR/cnv/5k/hg19.new.varbin.gc.content.5k.txt' '$SMURFDIR/cnv/5k/hg19.badbins.5k.txt'' $SMURFDIR/cnv/cbs.r cbs.r.out
+$SMURFDIR/cnv/cbs_smurf.r $2.varbin.5k.txt $2 $SMURFDIR/cnv/5k/hg19.new.varbin.gc.content.5k.txt $SMURFDIR/cnv/5k/hg19.badbins.5k.txt
