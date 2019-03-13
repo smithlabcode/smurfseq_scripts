@@ -125,7 +125,7 @@ sdundo.all <- function (sdShort, ratioData, sd.undo) {
   while (TRUE) {
 
     chrom <- segs$chrom
-    chrom.shift <- c(segs$chrom[-1], segs$chrom[1])
+    chrom.shift <- c(chrom[-1], chrom[1])
 
 ### RISH: This doesn't seem to be working
     ## breakpoints <- which(chrom == chrom.shift)
@@ -179,36 +179,48 @@ cbs.segment01 <- function(indir, outdir,
                           alt.sample.name, alpha,
                           nperm, undo.SD, min.width) {
 
+  ## Load the gc content information
   gc <- read.table(varbin.gc, header=T)
 
+  ## Convert the chromosome names into numeric ids sorted by
+  ## chromosome number with sex chroms at the end
   chrom.numeric <- substring(gc$bin.chrom, 4)
   chrom.numeric[which(gc$bin.chrom == "chrX")] <- "23"
   chrom.numeric[which(gc$bin.chrom == "chrY")] <- "24"
   chrom.numeric <- as.numeric(chrom.numeric)
 
+  ## Load the data in the form of bin counts for genomic
+  ## positions. The "ratio" column present in the input file will be
+  ## over-written shortly.
   thisRatio <- read.table(paste(indir, varbin.data, sep="/"), header=F)
   names(thisRatio) <- c("chrom", "chrompos", "abspos", "bincount", "ratio")
   thisRatio$chrom <- chrom.numeric
+
+  ## Take the fractional counts after using Laplaces correction
   a <- thisRatio$bincount + 1
   thisRatio$ratio <- a / mean(a)
   thisRatio$gc.content <- gc$gc.content
   thisRatio$lowratio <- lowess.gc(thisRatio$gc.content, thisRatio$ratio)
 
-  bad <- read.table(bad.bins.file, header=F, as.is=T, stringsAsFactors=F)
-  thisRatioNobig <- thisRatio[-bad[, 1], ]
+  ## Load the "bad" bins, which are pre-determined as having problems
+  ## due to technical issues with the genome or the sequencing, etc.
+  bad.bins <- read.table(bad.bins.file, header=F, as.is=T, stringsAsFactors=F)
+  thisRatioNobig <- thisRatio[-bad.bins[, 1], ]
 
   set.seed(25)
-  CNA.object <- CNA(log(thisRatioNobig$lowratio, base=2),
-                    gc$chrom.arm[-bad[, 1]],
-                    thisRatioNobig$chrompos,
-                    data.type="logratio",
-                    sampleid=sample.name)
-  smoothed.CNA.object <- smooth.CNA(CNA.object)
-  segment.smoothed.CNA.object <- segment(smoothed.CNA.object,
-                                         alpha=alpha, nperm=nperm,
-                                         undo.splits="sdundo",
-                                         undo.SD=undo.SD, min.width=2)
-  segs <- segment.smoothed.CNA.object[[2]]
+
+  ## Do the work of the copy number analysis using CNA, and
+  ## immediately apply smoothing to the result.
+  cna.result <- smooth.CNA(CNA(log2(thisRatioNobig$lowratio),
+                               gc$chrom.arm[-bad.bins[, 1]],
+                               thisRatioNobig$chrompos,
+                               data.type="logratio",
+                               sampleid=sample.name))
+
+  ## Obtain segments from the smoothed CNA result, using only the
+  ## short form
+  segs <- segment(cna.result, alpha=alpha, nperm=nperm,
+                  undo.splits="sdundo", undo.SD=undo.SD, min.width=2)[[2]]
 
   ## RISH: This can probably be removed by ordering the CNV object
   sortcol <- segs$chrom
@@ -220,17 +232,16 @@ cbs.segment01 <- function(indir, outdir,
 #####  NEW STUFF  also check min.width=2 above
 
   work.segs <- segs
-  work.segs$segnum <- 0
-  work.segs$seg.start <- 0
-  work.segs$seg.end <- 0
-  prevEnd <- 0
+  work.segs$segnum <- c()
+  work.segs$seg.start <- c()
+  work.segs$seg.end <- c()
+  prev.end <- 0
   for (i in 1:nrow(segs)) {
-    thisStart <- prevEnd + 1
-    thisEnd <- prevEnd + segs$num.mark[i]
-    work.segs$seg.start[i] <- thisStart
-    work.segs$seg.end[i] <- thisEnd
+    work.segs$seg.start[i] <- prev.end + 1
+    curr.end <- prev.end + segs$num.mark[i]
+    work.segs$seg.end[i] <- curr.end
     work.segs$segnum[i] <- i
-    prevEnd = thisEnd
+    prev.end <- curr.end
   }
 
   discard.segs <- TRUE
@@ -249,12 +260,12 @@ cbs.segment01 <- function(indir, outdir,
 #####  END NEW STUFF
 
   m <- matrix(data=0, nrow=nrow(thisRatioNobig), ncol=1)
-  prevEnd <- 0
+  prev.end <- 0
   for (i in 1:nrow(segs)) {
-    thisStart <- prevEnd + 1
-    thisEnd <- prevEnd + segs$num.mark[i]
-    m[thisStart:thisEnd, 1] <- 2^segs$seg.mean[i]
-    prevEnd = thisEnd
+    thisStart <- prev.end + 1
+    this.end <- prev.end + segs$num.mark[i]
+    m[thisStart:this.end, 1] <- 2^segs$seg.mean[i]
+    prev.end <- this.end
   }
   thisRatioNobig$seg.mean.LOWESS <- m[, 1]
 
@@ -316,10 +327,10 @@ main <- function() {
   varbin_file <- args[1]
   sample_name <- args[2]
   gc_file <- args[3]
-  badbins_file <- args[4]
+  bad.bins.file <- args[4]
 
   cbs.segment01(indir=".", outdir=".",
-                varbin.gc=gc_file, bad.bins.file=badbins_file,
+                varbin.gc=gc_file, bad.bins.file=bad.bins.file,
                 varbin.data=varbin_file, sample.name=sample_name,
                 alt.sample.name="",
                 alpha=alpha.value,
