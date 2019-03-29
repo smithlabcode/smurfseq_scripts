@@ -25,41 +25,41 @@ format.progress.message <- function(segs, idx) {
 ### the mean of that segment.
 remove.segment <- function(rsShort, rsSegnum, ratioData, sd.undo) {
 
-  appendLeft <- TRUE
+  append.left <- TRUE
   checkSdundo <- FALSE
 
   if (rsSegnum == 1) { # current is first segment
-    appendLeft <- FALSE
+    append.left <- FALSE
   }
   else if (rsSegnum == nrow(rsShort)) {
-    appendLeft <- TRUE
+    append.left <- TRUE
   }
   else {
     right.idx <- rsSegnum + 1
     left.idx <- rsSegnum - 1
 
     if (rsShort[right.idx, "chrom"] != rsShort[rsSegnum, "chrom"]) {
-      appendLeft <- TRUE
+      append.left <- TRUE
     }
     else {
       if (rsShort[left.idx, "chrom"] != rsShort[rsSegnum, "chrom"]) {
-        appendLeft <- FALSE
+        append.left <- FALSE
       }
       else {
         if (abs(rsShort[left.idx, "seg.mean"] - rsShort[rsSegnum, "seg.mean"]) <
             abs(rsShort[right.idx, "seg.mean"] - rsShort[rsSegnum, "seg.mean"])) {
-          appendLeft <- TRUE
+          append.left <- TRUE
           checkSdundo <- TRUE
         }
         else {
-          appendLeft <- FALSE
+          append.left <- FALSE
           checkSdundo <- TRUE
         }
       }
     }
   }
   apnd.idx <- 0
-  if (appendLeft) {
+  if (append.left) {
     apnd.idx <- rsSegnum - 1
   }
   else {
@@ -67,7 +67,7 @@ remove.segment <- function(rsShort, rsSegnum, ratioData, sd.undo) {
   }
 
   segs <- rsShort
-  if (appendLeft) {
+  if (append.left) {
     segs[apnd.idx, "loc.end"] <- segs[rsSegnum, "loc.end"]
     segs[apnd.idx, "seg.end"] <- segs[rsSegnum, "seg.end"]
   }
@@ -86,7 +86,7 @@ remove.segment <- function(rsShort, rsSegnum, ratioData, sd.undo) {
 
   if (checkSdundo) {
     thisSd <- -1
-    if (appendLeft) {
+    if (append.left) {
       left.idx <- apnd.idx
       right.idx <- apnd.idx + 1
     }
