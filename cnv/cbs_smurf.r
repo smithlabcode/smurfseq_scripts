@@ -117,19 +117,19 @@ RemoveSegment <- function(rs.short, rs.seg.num, ratio.data, sd.undo) {
 }
 
 
-sdundo.all <- function (sdShort, ratioData, sd.undo) {
+sdundo.all <- function (sd.short, ratio.data, sd.undo) {
 
-  segs <- sdShort
-  thisSd <- mad(diff(ratioData[, "lowratio"])) / sqrt(2)
+  segs <- sd.short
+  cur.sd <- mad(diff(ratio.data[, "lowratio"])) / sqrt(2)
 
   while (TRUE) {
 
     chrom <- segs$chrom
     chrom.shift <- c(chrom[-1], chrom[1])
 
-### RISH: This doesn't seem to be working
+    ### RISH: This doesn't seem to be working
     ## breakpoints <- which(chrom == chrom.shift)
-### RISH: Fixed by adding as.numeric
+    ### RISH: Fixed by adding as.numeric
     breakpoints <- which(as.numeric(chrom) == chrom.shift)
     cat("sdundo.all intrachrom breakpoints", length(breakpoints), "\n")
 
@@ -140,7 +140,7 @@ sdundo.all <- function (sdShort, ratioData, sd.undo) {
     breakpoints.shift <- breakpoints + 1
 
     undo.breakpoints <- breakpoints[which(abs(segs$seg.mean[breakpoints] -
-                                              segs$seg.mean[breakpoints.shift]) < thisSd*sd.undo)]
+                                              segs$seg.mean[breakpoints.shift]) < cur.sd*sd.undo)]
 
     cat("sdundo.all undo breakpoints", length(undo.breakpoints), "\n")
 
@@ -165,7 +165,7 @@ sdundo.all <- function (sdShort, ratioData, sd.undo) {
     segs[left.idx, "loc.end"] <- segs[right.idx, "loc.end"]
     segs[left.idx, "seg.end"] <- segs[right.idx, "seg.end"]
     segs[left.idx, "num.mark"] <- segs[left.idx, "num.mark"] + segs[right.idx, "num.mark"]
-    segs[left.idx, "seg.mean"] <- mean(log2(ratioData$lowratio[segs[left.idx, "seg.start"]:segs[right.idx, "seg.end"]]))
+    segs[left.idx, "seg.mean"] <- mean(log2(ratio.data$lowratio[segs[left.idx, "seg.start"]:segs[right.idx, "seg.end"]]))
     segs <- segs[-right.idx, ]
     segs$segnum <- seq(1:nrow(segs))
   }
