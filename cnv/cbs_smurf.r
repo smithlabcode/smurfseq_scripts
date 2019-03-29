@@ -23,10 +23,10 @@ format.progress.message <- function(segs, idx) {
 ### and merges the removed segment with either the left or right
 ### neighbor, depending on which one seems more similar in terms of
 ### the mean of that segment.
-RemoveSegment <- function(rs.short, rs.seg.num, ratioData, sd.undo) {
+RemoveSegment <- function(rs.short, rs.seg.num, ratio.data, sd.undo) {
 
   append.left <- TRUE
-  checkSdundo <- FALSE
+  check.sd.undo <- FALSE
 
   if (rs.seg.num == 1) { # current is first segment
     append.left <- FALSE
@@ -49,11 +49,11 @@ RemoveSegment <- function(rs.short, rs.seg.num, ratioData, sd.undo) {
         if (abs(rs.short[left.idx, "seg.mean"] - rs.short[rs.seg.num, "seg.mean"]) <
             abs(rs.short[right.idx, "seg.mean"] - rs.short[rs.seg.num, "seg.mean"])) {
           append.left <- TRUE
-          checkSdundo <- TRUE
+          check.sd.undo <- TRUE
         }
         else {
           append.left <- FALSE
-          checkSdundo <- TRUE
+          check.sd.undo <- TRUE
         }
       }
     }
@@ -77,15 +77,15 @@ RemoveSegment <- function(rs.short, rs.seg.num, ratioData, sd.undo) {
   }
 
   segs[apnd.idx, "num.mark"] <- segs[apnd.idx, "num.mark"] + segs[rs.seg.num, "num.mark"]
-  segs[apnd.idx, "seg.mean"] <- mean(log2(ratioData$lowratio[segs[apnd.idx, "seg.start"]:segs[apnd.idx, "seg.end"]]))
+  segs[apnd.idx, "seg.mean"] <- mean(log2(ratio.data$lowratio[segs[apnd.idx, "seg.start"]:segs[apnd.idx, "seg.end"]]))
 
   cat('append', format.progress.message(segs, apnd.idx), '\n');
 
   segs <- segs[-rs.seg.num, ]
   segs$segnum <- seq(1:nrow(segs))
 
-  if (checkSdundo) {
-    thisSd <- -1
+  if (check.sd.undo) {
+    cur.sd <- -1
     if (append.left) {
       left.idx <- apnd.idx
       right.idx <- apnd.idx + 1
@@ -94,11 +94,11 @@ RemoveSegment <- function(rs.short, rs.seg.num, ratioData, sd.undo) {
       left.idx <- apnd.idx - 2
       right.idx <- apnd.idx - 1
     }
-    ##thisSd <- sd(ratioData[segs$seg.start[left.idx]:segs$seg.start[right.idx], "lowratio"])
-    thisSd <- mad(diff(ratioData[, "lowratio"])) / sqrt(2)
+    ##cur.sd <- sd(ratio.data[segs$seg.start[left.idx]:segs$seg.start[right.idx], "lowratio"])
+    cur.sd <- mad(diff(ratio.data[, "lowratio"])) / sqrt(2)
 
     if (abs(segs$seg.mean[left.idx] -
-            segs$seg.mean[right.idx]) < (sd.undo * thisSd)) {
+            segs$seg.mean[right.idx]) < (sd.undo * cur.sd)) {
 
       cat('left', format.progress.message(segs, left.idx), '\n');
       cat('right', format.progress.message(segs, right.idx), '\n');
@@ -107,7 +107,7 @@ RemoveSegment <- function(rs.short, rs.seg.num, ratioData, sd.undo) {
       segs[left.idx, "loc.end"] <- segs[right.idx, "loc.end"]
       segs[left.idx, "seg.end"] <- segs[right.idx, "seg.end"]
       segs[left.idx, "num.mark"] <- segs[left.idx, "num.mark"] + segs[right.idx, "num.mark"]
-      segs[left.idx, "seg.mean"] <- mean(log2(ratioData$lowratio[segs[left.idx, "seg.start"]:segs[right.idx, "seg.end"]]))
+      segs[left.idx, "seg.mean"] <- mean(log2(ratio.data$lowratio[segs[left.idx, "seg.start"]:segs[right.idx, "seg.end"]]))
       segs <- segs[-right.idx, ]
       segs$segnum <- seq(1:nrow(segs))
     }
