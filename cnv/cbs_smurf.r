@@ -9,8 +9,8 @@ lowess.gc <- function(jtkx, jtky) {
 }
 
 format.progress.message <- function(segs, idx) {
-  fields <- c('chrom', 'loc.start', 'loc.end',
-              'num.mark', 'seg.mean', 'seg.start', 'seg.end')
+  fields <- c('chrom', 'loc.start', 'loc.end', 'num.mark', 
+              'seg.mean', 'seg.start', 'seg.end')
   fld.format <- c('%s', '%d', '%d', '%d', '%f', '%d', '%d')
   mesg <- ''
   for (i in 1:length(fields)) {
@@ -140,7 +140,7 @@ sdundo.all <- function (sd.short, ratio.data, sd.undo) {
     breakpoints.shift <- breakpoints + 1
 
     undo.breakpoints <- breakpoints[which(abs(segs$seg.mean[breakpoints] -
-                                              segs$seg.mean[breakpoints.shift]) < cur.sd*sd.undo)]
+                                              segs$seg.mean[breakpoints.shift]) < cur.sd * sd.undo)]
 
     cat("sdundo.all undo breakpoints", length(undo.breakpoints), "\n")
 
@@ -177,7 +177,7 @@ cbs.segment01 <- function(indir, outdir,
                           varbin.gc, bad.bins.file,
                           varbin.data, sample.name,
                           alt.sample.name, alpha,
-                          nperm, undo.SD, min.width) {
+                          nperm, undo.sd, min.width) {
 
   ## Load the gc content information
   gc <- read.table(varbin.gc, header=T)
@@ -192,35 +192,35 @@ cbs.segment01 <- function(indir, outdir,
   ## Load the data in the form of bin counts for genomic
   ## positions. The "ratio" column present in the input file will be
   ## over-written shortly.
-  thisRatio <- read.table(paste(indir, varbin.data, sep="/"), header=F)
-  names(thisRatio) <- c("chrom", "chrompos", "abspos", "bincount", "ratio")
-  thisRatio$chrom <- chrom.numeric
+  cur.ratio <- read.table(paste(indir, varbin.data, sep="/"), header=F)
+  names(cur.ratio) <- c("chrom", "chrompos", "abspos", "bincount", "ratio")
+  cur.ratio$chrom <- chrom.numeric
 
   ## Take the fractional counts after using Laplaces correction
-  a <- thisRatio$bincount + 1
-  thisRatio$ratio <- a / mean(a)
-  thisRatio$gc.content <- gc$gc.content
-  thisRatio$lowratio <- lowess.gc(thisRatio$gc.content, thisRatio$ratio)
+  a <- cur.ratio$bincount + 1
+  cur.ratio$ratio <- a / mean(a)
+  cur.ratio$gc.content <- gc$gc.content
+  cur.ratio$lowratio <- lowess.gc(cur.ratio$gc.content, cur.ratio$ratio)
 
   ## Load the "bad" bins, which are pre-determined as having problems
   ## due to technical issues with the genome or the sequencing, etc.
   bad.bins <- read.table(bad.bins.file, header=F, as.is=T, stringsAsFactors=F)
-  thisRatioNobig <- thisRatio[-bad.bins[, 1], ]
+  cur.ratioNobig <- cur.ratio[-bad.bins[, 1], ]
 
   set.seed(25)
 
   ## Do the work of the copy number analysis using CNA, and
   ## immediately apply smoothing to the result.
-  cna.result <- smooth.CNA(CNA(log2(thisRatioNobig$lowratio),
+  cna.result <- smooth.CNA(CNA(log2(cur.ratioNobig$lowratio),
                                gc$chrom.arm[-bad.bins[, 1]],
-                               thisRatioNobig$chrompos,
+                               cur.ratioNobig$chrompos,
                                data.type="logratio",
                                sampleid=sample.name))
 
   ## Obtain segments from the smoothed CNA result, using only the
   ## short form
   segs <- segment(cna.result, alpha=alpha, nperm=nperm,
-                  undo.splits="sdundo", undo.SD=undo.SD, min.width=2)[[2]]
+                  undo.splits="sdundo", undo.sd=undo.sd, min.width=2)[[2]]
 
   ## RISH: This can probably be removed by ordering the CNV object
   sortcol <- segs$chrom
@@ -229,8 +229,7 @@ cbs.segment01 <- function(indir, outdir,
   sortcol <- gsub("q", "", sortcol)
   segs <- segs[order(as.numeric(sortcol)), ]
 
-#####  NEW STUFF  also check min.width=2 above
-
+  #####  NEW STUFF  also check min.width=2 above
   work.segs <- segs
   work.segs$segnum <- c()
   work.segs$seg.start <- c()
@@ -248,18 +247,17 @@ cbs.segment01 <- function(indir, outdir,
   while (discard.segs) {
     work.segs.ord <- work.segs[order(work.segs$num.mark, abs(work.segs$seg.mean)), ]
     if (work.segs.ord[1, "num.mark"] < min.width) {
-      work.segs <- RemoveSegment(work.segs, work.segs.ord[1, "segnum"], thisRatioNobig, undo.SD)
+      work.segs <- RemoveSegment(work.segs, work.segs.ord[1, "segnum"], cur.ratioNobig, undo.sd)
     }
     else {
       discard.segs <- FALSE
     }
   }
-  work.segs <- sdundo.all(work.segs, thisRatioNobig, undo.SD)
+  work.segs <- sdundo.all(work.segs, cur.ratioNobig, undo.sd)
   segs <- work.segs
+  #####  END NEW STUFF
 
-#####  END NEW STUFF
-
-  m <- matrix(data=0, nrow=nrow(thisRatioNobig), ncol=1)
+  m <- matrix(data=0, nrow=nrow(cur.ratioNobig), ncol=1)
   prev.end <- 0
   for (i in 1:nrow(segs)) {
     thisStart <- prev.end + 1
@@ -267,12 +265,12 @@ cbs.segment01 <- function(indir, outdir,
     m[thisStart:this.end, 1] <- 2^segs$seg.mean[i]
     prev.end <- this.end
   }
-  thisRatioNobig$seg.mean.LOWESS <- m[, 1]
+  cur.ratioNobig$seg.mean.LOWESS <- m[, 1]
 
-  chr <- thisRatioNobig$chrom
+  chr <- cur.ratioNobig$chrom
   chr.shift <- c(chr[-1], chr[length(chr)])
 
-  vlines <- c(1, thisRatio$abspos[which(chr != chr.shift) + 1], thisRatio$abspos[nrow(thisRatio)])
+  vlines <- c(1, cur.ratio$abspos[which(chr != chr.shift) + 1], cur.ratio$abspos[nrow(cur.ratio)])
   hlines <- c(0.5, 1.0, 1.5, 2.0)
   chr.text <- c(1:22, "X", "Y")
   vlines.shift <- c(vlines[-1], 4*10^9)
@@ -284,24 +282,24 @@ cbs.segment01 <- function(indir, outdir,
 
   pdf(paste(outdir, "/", sample.name, ".5k.wg.nobad.pdf", sep=""), height=3.5, width=6, useDingbats=FALSE)
   par(pin=c(5.0,1.75))
-  plot(x=thisRatioNobig$abspos,
-       y=thisRatioNobig$lowratio,
+  plot(x=cur.ratioNobig$abspos,
+       y=cur.ratioNobig$lowratio,
        log="y", main=paste(sample.name, alt.sample.name),
        xaxt="n", xlab="Genome Position Gb",
        yaxt="n", ylab="Ratio", col="#517FFF", cex=0.01)
 
   ## axis(1, at=x.at, labels=x.labels)
   axis(2, at=y.at, labels=y.labels)
-  ## lines(x=thisRatioNobig$abspos, y=thisRatioNobig$lowratio, col="#CCCCCC")
-  ## points(x=thisRatioNobig$abspos, y=thisRatioNobig$seg.mean.LOWESS, col="#0000AA")
-  lines(x=thisRatioNobig$abspos, y=thisRatioNobig$seg.mean.LOWESS, col="red", cex=1.0)
+  ## lines(x=cur.ratioNobig$abspos, y=cur.ratioNobig$lowratio, col="#CCCCCC")
+  ## points(x=cur.ratioNobig$abspos, y=cur.ratioNobig$seg.mean.LOWESS, col="#0000AA")
+  lines(x=cur.ratioNobig$abspos, y=cur.ratioNobig$seg.mean.LOWESS, col="red", cex=1.0)
   ## abline(h=hlines)
   ## abline(v=vlines)
   abline(v=vlines, lwd=0.1, col="grey")
   ## mtext(chr.text, at = chr.at)
   dev.off()
 
-  write.table(thisRatioNobig, sep="\t",
+  write.table(cur.ratioNobig, sep="\t",
               file=paste(outdir, "/", sample.name,
                          ".hg19.5k.nobad.varbin.data.txt", sep=""),
               quote=F, row.names=F)
