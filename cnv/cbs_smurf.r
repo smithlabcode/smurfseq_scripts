@@ -23,70 +23,70 @@ format.progress.message <- function(segs, idx) {
 ### and merges the removed segment with either the left or right
 ### neighbor, depending on which one seems more similar in terms of
 ### the mean of that segment.
-remove.segment <- function(rsShort, rsSegnum, ratioData, sd.undo) {
+RemoveSegment <- function(rs.short, rs.seg.num, ratio.data, sd.undo) {
 
-  appendLeft <- TRUE
-  checkSdundo <- FALSE
+  append.left <- TRUE
+  check.sd.undo <- FALSE
 
-  if (rsSegnum == 1) { # current is first segment
-    appendLeft <- FALSE
+  if (rs.seg.num == 1) { # current is first segment
+    append.left <- FALSE
   }
-  else if (rsSegnum == nrow(rsShort)) {
-    appendLeft <- TRUE
+  else if (rs.seg.num == nrow(rs.short)) {
+    append.left <- TRUE
   }
   else {
-    right.idx <- rsSegnum + 1
-    left.idx <- rsSegnum - 1
+    right.idx <- rs.seg.num + 1
+    left.idx <- rs.seg.num - 1
 
-    if (rsShort[right.idx, "chrom"] != rsShort[rsSegnum, "chrom"]) {
-      appendLeft <- TRUE
+    if (rs.short[right.idx, "chrom"] != rs.short[rs.seg.num, "chrom"]) {
+      append.left <- TRUE
     }
     else {
-      if (rsShort[left.idx, "chrom"] != rsShort[rsSegnum, "chrom"]) {
-        appendLeft <- FALSE
+      if (rs.short[left.idx, "chrom"] != rs.short[rs.seg.num, "chrom"]) {
+        append.left <- FALSE
       }
       else {
-        if (abs(rsShort[left.idx, "seg.mean"] - rsShort[rsSegnum, "seg.mean"]) <
-            abs(rsShort[right.idx, "seg.mean"] - rsShort[rsSegnum, "seg.mean"])) {
-          appendLeft <- TRUE
-          checkSdundo <- TRUE
+        if (abs(rs.short[left.idx, "seg.mean"] - rs.short[rs.seg.num, "seg.mean"]) <
+            abs(rs.short[right.idx, "seg.mean"] - rs.short[rs.seg.num, "seg.mean"])) {
+          append.left <- TRUE
+          check.sd.undo <- TRUE
         }
         else {
-          appendLeft <- FALSE
-          checkSdundo <- TRUE
+          append.left <- FALSE
+          check.sd.undo <- TRUE
         }
       }
     }
   }
   apnd.idx <- 0
-  if (appendLeft) {
-    apnd.idx <- rsSegnum - 1
+  if (append.left) {
+    apnd.idx <- rs.seg.num - 1
   }
   else {
-    apnd.idx <- rsSegnum + 1
+    apnd.idx <- rs.seg.num + 1
   }
 
-  segs <- rsShort
-  if (appendLeft) {
-    segs[apnd.idx, "loc.end"] <- segs[rsSegnum, "loc.end"]
-    segs[apnd.idx, "seg.end"] <- segs[rsSegnum, "seg.end"]
+  segs <- rs.short
+  if (append.left) {
+    segs[apnd.idx, "loc.end"] <- segs[rs.seg.num, "loc.end"]
+    segs[apnd.idx, "seg.end"] <- segs[rs.seg.num, "seg.end"]
   }
   else {
-    segs[apnd.idx, "loc.start"] <- segs[rsSegnum, "loc.start"]
-    segs[apnd.idx, "seg.start"] <- segs[rsSegnum, "seg.start"]
+    segs[apnd.idx, "loc.start"] <- segs[rs.seg.num, "loc.start"]
+    segs[apnd.idx, "seg.start"] <- segs[rs.seg.num, "seg.start"]
   }
 
-  segs[apnd.idx, "num.mark"] <- segs[apnd.idx, "num.mark"] + segs[rsSegnum, "num.mark"]
-  segs[apnd.idx, "seg.mean"] <- mean(log2(ratioData$lowratio[segs[apnd.idx, "seg.start"]:segs[apnd.idx, "seg.end"]]))
+  segs[apnd.idx, "num.mark"] <- segs[apnd.idx, "num.mark"] + segs[rs.seg.num, "num.mark"]
+  segs[apnd.idx, "seg.mean"] <- mean(log2(ratio.data$lowratio[segs[apnd.idx, "seg.start"]:segs[apnd.idx, "seg.end"]]))
 
   cat('append', format.progress.message(segs, apnd.idx), '\n');
 
-  segs <- segs[-rsSegnum, ]
+  segs <- segs[-rs.seg.num, ]
   segs$segnum <- seq(1:nrow(segs))
 
-  if (checkSdundo) {
-    thisSd <- -1
-    if (appendLeft) {
+  if (check.sd.undo) {
+    cur.sd <- -1
+    if (append.left) {
       left.idx <- apnd.idx
       right.idx <- apnd.idx + 1
     }
@@ -94,11 +94,11 @@ remove.segment <- function(rsShort, rsSegnum, ratioData, sd.undo) {
       left.idx <- apnd.idx - 2
       right.idx <- apnd.idx - 1
     }
-    ##thisSd <- sd(ratioData[segs$seg.start[left.idx]:segs$seg.start[right.idx], "lowratio"])
-    thisSd <- mad(diff(ratioData[, "lowratio"])) / sqrt(2)
+    ##cur.sd <- sd(ratio.data[segs$seg.start[left.idx]:segs$seg.start[right.idx], "lowratio"])
+    cur.sd <- mad(diff(ratio.data[, "lowratio"])) / sqrt(2)
 
     if (abs(segs$seg.mean[left.idx] -
-            segs$seg.mean[right.idx]) < (sd.undo * thisSd)) {
+            segs$seg.mean[right.idx]) < (sd.undo * cur.sd)) {
 
       cat('left', format.progress.message(segs, left.idx), '\n');
       cat('right', format.progress.message(segs, right.idx), '\n');
@@ -107,7 +107,7 @@ remove.segment <- function(rsShort, rsSegnum, ratioData, sd.undo) {
       segs[left.idx, "loc.end"] <- segs[right.idx, "loc.end"]
       segs[left.idx, "seg.end"] <- segs[right.idx, "seg.end"]
       segs[left.idx, "num.mark"] <- segs[left.idx, "num.mark"] + segs[right.idx, "num.mark"]
-      segs[left.idx, "seg.mean"] <- mean(log2(ratioData$lowratio[segs[left.idx, "seg.start"]:segs[right.idx, "seg.end"]]))
+      segs[left.idx, "seg.mean"] <- mean(log2(ratio.data$lowratio[segs[left.idx, "seg.start"]:segs[right.idx, "seg.end"]]))
       segs <- segs[-right.idx, ]
       segs$segnum <- seq(1:nrow(segs))
     }
@@ -117,19 +117,19 @@ remove.segment <- function(rsShort, rsSegnum, ratioData, sd.undo) {
 }
 
 
-sdundo.all <- function (sdShort, ratioData, sd.undo) {
+sdundo.all <- function (sd.short, ratio.data, sd.undo) {
 
-  segs <- sdShort
-  thisSd <- mad(diff(ratioData[, "lowratio"])) / sqrt(2)
+  segs <- sd.short
+  cur.sd <- mad(diff(ratio.data[, "lowratio"])) / sqrt(2)
 
   while (TRUE) {
 
     chrom <- segs$chrom
     chrom.shift <- c(chrom[-1], chrom[1])
 
-### RISH: This doesn't seem to be working
+    ### RISH: This doesn't seem to be working
     ## breakpoints <- which(chrom == chrom.shift)
-### RISH: Fixed by adding as.numeric
+    ### RISH: Fixed by adding as.numeric
     breakpoints <- which(as.numeric(chrom) == chrom.shift)
     cat("sdundo.all intrachrom breakpoints", length(breakpoints), "\n")
 
@@ -140,7 +140,7 @@ sdundo.all <- function (sdShort, ratioData, sd.undo) {
     breakpoints.shift <- breakpoints + 1
 
     undo.breakpoints <- breakpoints[which(abs(segs$seg.mean[breakpoints] -
-                                              segs$seg.mean[breakpoints.shift]) < thisSd*sd.undo)]
+                                              segs$seg.mean[breakpoints.shift]) < cur.sd*sd.undo)]
 
     cat("sdundo.all undo breakpoints", length(undo.breakpoints), "\n")
 
@@ -165,7 +165,7 @@ sdundo.all <- function (sdShort, ratioData, sd.undo) {
     segs[left.idx, "loc.end"] <- segs[right.idx, "loc.end"]
     segs[left.idx, "seg.end"] <- segs[right.idx, "seg.end"]
     segs[left.idx, "num.mark"] <- segs[left.idx, "num.mark"] + segs[right.idx, "num.mark"]
-    segs[left.idx, "seg.mean"] <- mean(log2(ratioData$lowratio[segs[left.idx, "seg.start"]:segs[right.idx, "seg.end"]]))
+    segs[left.idx, "seg.mean"] <- mean(log2(ratio.data$lowratio[segs[left.idx, "seg.start"]:segs[right.idx, "seg.end"]]))
     segs <- segs[-right.idx, ]
     segs$segnum <- seq(1:nrow(segs))
   }
@@ -248,7 +248,7 @@ cbs.segment01 <- function(indir, outdir,
   while (discard.segs) {
     work.segs.ord <- work.segs[order(work.segs$num.mark, abs(work.segs$seg.mean)), ]
     if (work.segs.ord[1, "num.mark"] < min.width) {
-      work.segs <- remove.segment(work.segs, work.segs.ord[1, "segnum"], thisRatioNobig, undo.SD)
+      work.segs <- RemoveSegment(work.segs, work.segs.ord[1, "segnum"], thisRatioNobig, undo.SD)
     }
     else {
       discard.segs <- FALSE
