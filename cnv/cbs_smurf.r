@@ -23,7 +23,7 @@ format.progress.message <- function(segs, idx) {
 ### and merges the removed segment with either the left or right
 ### neighbor, depending on which one seems more similar in terms of
 ### the mean of that segment.
-remove.segment <- function(rsShort, rsSegnum, ratioData, sd.undo) {
+remove.segment <- function(rs.short, rsSegnum, ratioData, sd.undo) {
 
   append.left <- TRUE
   checkSdundo <- FALSE
@@ -31,23 +31,23 @@ remove.segment <- function(rsShort, rsSegnum, ratioData, sd.undo) {
   if (rsSegnum == 1) { # current is first segment
     append.left <- FALSE
   }
-  else if (rsSegnum == nrow(rsShort)) {
+  else if (rsSegnum == nrow(rs.short)) {
     append.left <- TRUE
   }
   else {
     right.idx <- rsSegnum + 1
     left.idx <- rsSegnum - 1
 
-    if (rsShort[right.idx, "chrom"] != rsShort[rsSegnum, "chrom"]) {
+    if (rs.short[right.idx, "chrom"] != rs.short[rsSegnum, "chrom"]) {
       append.left <- TRUE
     }
     else {
-      if (rsShort[left.idx, "chrom"] != rsShort[rsSegnum, "chrom"]) {
+      if (rs.short[left.idx, "chrom"] != rs.short[rsSegnum, "chrom"]) {
         append.left <- FALSE
       }
       else {
-        if (abs(rsShort[left.idx, "seg.mean"] - rsShort[rsSegnum, "seg.mean"]) <
-            abs(rsShort[right.idx, "seg.mean"] - rsShort[rsSegnum, "seg.mean"])) {
+        if (abs(rs.short[left.idx, "seg.mean"] - rs.short[rsSegnum, "seg.mean"]) <
+            abs(rs.short[right.idx, "seg.mean"] - rs.short[rsSegnum, "seg.mean"])) {
           append.left <- TRUE
           checkSdundo <- TRUE
         }
@@ -66,7 +66,7 @@ remove.segment <- function(rsShort, rsSegnum, ratioData, sd.undo) {
     apnd.idx <- rsSegnum + 1
   }
 
-  segs <- rsShort
+  segs <- rs.short
   if (append.left) {
     segs[apnd.idx, "loc.end"] <- segs[rsSegnum, "loc.end"]
     segs[apnd.idx, "seg.end"] <- segs[rsSegnum, "seg.end"]
