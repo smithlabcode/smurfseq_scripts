@@ -18,16 +18,6 @@
 import sys, argparse
 from random import shuffle
 
-# def complement(base):
-#   if   base == 'A': return 'T'
-#   elif base == 'C': return 'G'
-#   elif base == 'G': return 'C'
-#   elif base == 'T': return 'A'
-#   else: return 'N'
-
-# def rev_comp(seq):
-#   return ''.join(list(map(complement, seq))[::-1])
-
 def main():
 
   parser = argparse.ArgumentParser()
