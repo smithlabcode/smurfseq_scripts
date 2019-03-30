@@ -25,17 +25,8 @@ from random import shuffle
 #   elif base == 'T': return 'A'
 #   else: return 'N'
 
-
 # def rev_comp(seq):
 #   return ''.join(list(map(complement, seq))[::-1])
-
-
-# class Frag:
-#   def __init__(self, chrom, pos, seq):
-#     self.chrom = chrom
-#     self.pos = str(pos) # we won't do arithmetic on the pos
-#     self.seq = seq
-
 
 def main():
 
