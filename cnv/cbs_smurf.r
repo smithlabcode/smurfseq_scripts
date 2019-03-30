@@ -311,10 +311,11 @@ cbs.segment01 <- function(indir, outdir,
 
 main <- function() {
 
-  alpha.value  <- 0.02
-  n.permutations  <- 1000
-  standard.dev <- 0.5
-  min.width <- 4
+  # CONSTANTS
+  kAlphaValue  <- 0.02
+  kNPermutations  <- 1000
+  kStandardDev <- 0.5
+  kMinWidth <- 4
 
   args = commandArgs(trailingOnly=TRUE)
   if (length(args) != 4) {
@@ -322,19 +323,19 @@ main <- function() {
          "<gc-content-file> <bad-bin-file>", call.=FALSE)
   }
 
-  varbin_file <- args[1]
-  sample_name <- args[2]
-  gc_file <- args[3]
+  varbin.file <- args[1]
+  sample.name <- args[2]
+  gc.file <- args[3]
   bad.bins.file <- args[4]
 
   cbs.segment01(indir=".", outdir=".",
-                varbin.gc=gc_file, bad.bins.file=bad.bins.file,
-                varbin.data=varbin_file, sample.name=sample_name,
+                varbin.gc=gc.file, bad.bins.file=bad.bins.file,
+                varbin.data=varbin.file, sample.name=sample.name,
                 alt.sample.name="",
-                alpha=alpha.value,
-                nperm=n.permutations,
-                undo.SD=standard.dev,
-                min.width=min.width)
+                alpha=kAlphaValue,
+                nperm=kNPermutations,
+                undo.SD=kStandardDev,
+                kMinWidth=kMinWidth)
 }
 
 main()
