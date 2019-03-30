@@ -21,13 +21,13 @@ import pysam
 def main():
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-s', '--sam-file', dest='inputFile',
+    parser.add_argument('-i', '--input-sam', dest='inputFile',
                         required=True, help= 'mapped reads in SAM file')
-    parser.add_argument('-a', '--min-alignment-score', dest='minAlnScore',
+    parser.add_argument('-o', '--output-sam', dest='outputFile',
+                        required=True, help= 'output file name')
+    parser.add_argument('-s', '--min-alignment-score', dest='minAlnScore',
                         type=float, required=True,
                         help= 'minimum alignment score to keep')
-    parser.add_argument('-o', '--outfile', dest='outputFile',
-                        required=True, help= 'output file name')
     parser.add_argument('-q', '--min-alignment-quality', dest='minAlnQual',
                         type=float, required=True,
                         help= 'minimum alignment quality to keep')
