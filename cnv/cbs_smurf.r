@@ -205,15 +205,15 @@ cbs.segment01 <- function(indir, outdir,
   ## Load the "bad" bins, which are pre-determined as having problems
   ## due to technical issues with the genome or the sequencing, etc.
   bad.bins <- read.table(bad.bins.file, header=F, as.is=T, stringsAsFactors=F)
-  cur.ratioNobig <- cur.ratio[-bad.bins[, 1], ]
+  cur.ratio.bad <- cur.ratio[-bad.bins[, 1], ]
 
   set.seed(25)
 
   ## Do the work of the copy number analysis using CNA, and
   ## immediately apply smoothing to the result.
-  cna.result <- smooth.CNA(CNA(log2(cur.ratioNobig$lowratio),
+  cna.result <- smooth.CNA(CNA(log2(cur.ratio.bad$lowratio),
                                gc$chrom.arm[-bad.bins[, 1]],
-                               cur.ratioNobig$chrompos,
+                               cur.ratio.bad$chrompos,
                                data.type="logratio",
                                sampleid=sample.name))
 
@@ -247,17 +247,17 @@ cbs.segment01 <- function(indir, outdir,
   while (discard.segs) {
     work.segs.ord <- work.segs[order(work.segs$num.mark, abs(work.segs$seg.mean)), ]
     if (work.segs.ord[1, "num.mark"] < min.width) {
-      work.segs <- RemoveSegment(work.segs, work.segs.ord[1, "segnum"], cur.ratioNobig, undo.sd)
+      work.segs <- RemoveSegment(work.segs, work.segs.ord[1, "segnum"], cur.ratio.bad, undo.sd)
     }
     else {
       discard.segs <- FALSE
     }
   }
-  work.segs <- sdundo.all(work.segs, cur.ratioNobig, undo.sd)
+  work.segs <- sdundo.all(work.segs, cur.ratio.bad, undo.sd)
   segs <- work.segs
   #####  END NEW STUFF
 
-  m <- matrix(data=0, nrow=nrow(cur.ratioNobig), ncol=1)
+  m <- matrix(data=0, nrow=nrow(cur.ratio.bad), ncol=1)
   prev.end <- 0
   for (i in 1:nrow(segs)) {
     thisStart <- prev.end + 1
@@ -265,9 +265,9 @@ cbs.segment01 <- function(indir, outdir,
     m[thisStart:this.end, 1] <- 2^segs$seg.mean[i]
     prev.end <- this.end
   }
-  cur.ratioNobig$seg.mean.LOWESS <- m[, 1]
+  cur.ratio.bad$seg.mean.LOWESS <- m[, 1]
 
-  chr <- cur.ratioNobig$chrom
+  chr <- cur.ratio.bad$chrom
   chr.shift <- c(chr[-1], chr[length(chr)])
 
   vlines <- c(1, cur.ratio$abspos[which(chr != chr.shift) + 1], cur.ratio$abspos[nrow(cur.ratio)])
@@ -282,24 +282,24 @@ cbs.segment01 <- function(indir, outdir,
 
   pdf(paste(outdir, "/", sample.name, ".5k.wg.nobad.pdf", sep=""), height=3.5, width=6, useDingbats=FALSE)
   par(pin=c(5.0,1.75))
-  plot(x=cur.ratioNobig$abspos,
-       y=cur.ratioNobig$lowratio,
+  plot(x=cur.ratio.bad$abspos,
+       y=cur.ratio.bad$lowratio,
        log="y", main=paste(sample.name, alt.sample.name),
        xaxt="n", xlab="Genome Position Gb",
        yaxt="n", ylab="Ratio", col="#517FFF", cex=0.01)
 
   ## axis(1, at=x.at, labels=x.labels)
   axis(2, at=y.at, labels=y.labels)
-  ## lines(x=cur.ratioNobig$abspos, y=cur.ratioNobig$lowratio, col="#CCCCCC")
-  ## points(x=cur.ratioNobig$abspos, y=cur.ratioNobig$seg.mean.LOWESS, col="#0000AA")
-  lines(x=cur.ratioNobig$abspos, y=cur.ratioNobig$seg.mean.LOWESS, col="red", cex=1.0)
+  ## lines(x=cur.ratio.bad$abspos, y=cur.ratio.bad$lowratio, col="#CCCCCC")
+  ## points(x=cur.ratio.bad$abspos, y=cur.ratio.bad$seg.mean.LOWESS, col="#0000AA")
+  lines(x=cur.ratio.bad$abspos, y=cur.ratio.bad$seg.mean.LOWESS, col="red", cex=1.0)
   ## abline(h=hlines)
   ## abline(v=vlines)
   abline(v=vlines, lwd=0.1, col="grey")
   ## mtext(chr.text, at = chr.at)
   dev.off()
 
-  write.table(cur.ratioNobig, sep="\t",
+  write.table(cur.ratio.bad, sep="\t",
               file=paste(outdir, "/", sample.name,
                          ".hg19.5k.nobad.varbin.data.txt", sep=""),
               quote=F, row.names=F)
