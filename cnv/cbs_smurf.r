@@ -173,8 +173,7 @@ SdUndoAll <- function (sd.short, ratio.data, sd.undo) {
   return(segs)
 }
 
-CbsSegment01 <- function(indir, outdir,
-                          varbin.gc, bad.bins.file,
+CbsSegment01 <- function(varbin.gc, bad.bins.file,
                           varbin.data, sample.name,
                           alt.sample.name, alpha,
                           nperm, undo.sd, min.width) {
@@ -192,7 +191,7 @@ CbsSegment01 <- function(indir, outdir,
   ## Load the data in the form of bin counts for genomic
   ## positions. The "ratio" column present in the input file will be
   ## over-written shortly.
-  cur.ratio <- read.table(paste(indir, varbin.data, sep="/"), header=F)
+  cur.ratio <- read.table(varbin.data, header=F)
   names(cur.ratio) <- c("chrom", "chrompos", "abspos", "bincount", "ratio")
   cur.ratio$chrom <- chrom.numeric
 
@@ -220,7 +219,7 @@ CbsSegment01 <- function(indir, outdir,
   ## Obtain segments from the smoothed CNA result, using only the
   ## short form
   segs <- segment(cna.result, alpha=alpha, nperm=nperm,
-                  undo.splits="sdundo", undo.sd=undo.sd, min.width=2)[[2]]
+                  undo.splits="sdundo", undo.SD=undo.sd, min.width=2)[[2]]
 
   ## RISH: This can probably be removed by ordering the CNV object
   sortcol <- segs$chrom
@@ -280,7 +279,7 @@ CbsSegment01 <- function(indir, outdir,
   y.at <- c(0.005, 0.020, 0.100, 0.500, 1.000, 2.000, 10, 100)
   y.labels <- c("0.005", "0.020", "0.100", "0.5", "1", "2", "10", "100")
 
-  pdf(paste(outdir, "/", sample.name, ".5k.wg.nobad.pdf", sep=""), height=3.5, width=6, useDingbats=FALSE)
+  pdf(paste(sample.name, ".5k.wg.nobad.pdf", sep=""), height=3.5, width=6, useDingbats=FALSE)
   par(pin=c(5.0,1.75))
   plot(x=cur.ratio.bad$abspos,
        y=cur.ratio.bad$lowratio,
@@ -300,12 +299,10 @@ CbsSegment01 <- function(indir, outdir,
   dev.off()
 
   write.table(cur.ratio.bad, sep="\t",
-              file=paste(outdir, "/", sample.name,
-                         ".hg19.5k.nobad.varbin.data.txt", sep=""),
+              file=paste(sample.name, ".hg19.5k.nobad.varbin.data.txt", sep=""),
               quote=F, row.names=F)
   write.table(segs, sep="\t",
-              file=paste(outdir, "/", sample.name,
-                         ".hg19.5k.nobad.varbin.short.txt", sep=""),
+              file=paste(sample.name, ".hg19.5k.nobad.varbin.short.txt", sep=""),
               quote=F, row.names=F)
 }
 
@@ -328,8 +325,7 @@ main <- function() {
   gc.file <- args[3]
   bad.bins.file <- args[4]
 
-  CbsSegment01(indir=".", outdir=".",
-               varbin.gc=gc.file, bad.bins.file=bad.bins.file,
+  CbsSegment01(varbin.gc=gc.file, bad.bins.file=bad.bins.file,
                varbin.data=varbin.file, sample.name=sample.name,
                alt.sample.name="",
                alpha=kAlphaValue,
