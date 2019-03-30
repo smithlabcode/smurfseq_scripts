@@ -70,7 +70,8 @@ for read in map_file.fetch():
           frag_seq = rev_comp(frag_seq)
 
         # print(frag_ch, frag_pos, frag_seq)
-        print(">Read" + str(read_count) + "-" + frag_ch + ":" + str(frag_pos))
-        print(frag_seq)
+        # print(">Read" + str(read_count) + "-" + frag_ch + ":" + str(frag_pos))
+        # print(frag_seq)
+        print(frag_ch, str(frag_pos), str(frag_pos+frag_len), frag_seq, sep="\t")
         frag_st += frag_len
         read_count += 1
