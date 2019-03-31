@@ -34,7 +34,7 @@ determined based on what is required in the next script.
 In the next step we use an adaptation of a script originally due to
 ASDF.
 ```
-./cnvAnalysis.R <bins-bed-file> <sample-name> <gc-content-file> <bad-bins>
+./cnvAnalysis.R bin_counts.bed SampelName bins_5k_hg19_gc.txt bins_5k_hg19_exclude.txt
 ```
 
 ## Simulating SMURF-seq reads for evaluating mappers
