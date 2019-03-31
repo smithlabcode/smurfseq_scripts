@@ -165,10 +165,47 @@ SdUndoAll <- function (sd.short, ratio.data, sd.undo) {
   return(segs)
 }
 
+
+PlotSegment <- function(cur.ratio, cur.ratio.bad, sample.name) {
+
+  chr <- cur.ratio.bad$chrom
+  chr.shift <- c(chr[-1], chr[length(chr)])
+
+  vlines <- c(1, cur.ratio$abspos[which(chr != chr.shift) + 1], cur.ratio$abspos[nrow(cur.ratio)])
+  hlines <- c(0.5, 1.0, 1.5, 2.0)
+  chr.text <- c(1:22, "X", "Y")
+  vlines.shift <- c(vlines[-1], 4 * 10^9)
+  chr.at <- vlines + (vlines.shift - vlines) / 2
+  x.at <- c(0, 0.5, 1, 1.5, 2, 2.5, 3) * 10^9
+  x.labels <- c("0", "0.5", "1.0", "1.5", "2.0", "2.5", "3.0")
+  y.at <- c(0.005, 0.020, 0.100, 0.500, 1.000, 2.000, 10, 100)
+  y.labels <- c("0.005", "0.020", "0.100", "0.5", "1", "2", "10", "100")
+
+  pdf(paste(sample.name, ".5k.wg.nobad.pdf", sep=""), height=3.5, width=6, useDingbats=FALSE)
+  par(pin=c(5.0, 1.75))
+  plot(x=cur.ratio.bad$abspos,
+       y=cur.ratio.bad$lowratio,
+       log="y", main=sample.name,
+       xaxt="n", xlab="Genome Position Gb",
+       yaxt="n", ylab="Ratio", col="#517FFF", cex=0.01)
+
+  ## axis(1, at=x.at, labels=x.labels)
+  axis(2, at=y.at, labels=y.labels)
+  ## lines(x=cur.ratio.bad$abspos, y=cur.ratio.bad$lowratio, col="#CCCCCC")
+  ## points(x=cur.ratio.bad$abspos, y=cur.ratio.bad$seg.mean.LOWESS, col="#0000AA")
+  lines(x=cur.ratio.bad$abspos, y=cur.ratio.bad$seg.mean.LOWESS, col="red", cex=1.0)
+  ## abline(h=hlines)
+  ## abline(v=vlines)
+  abline(v=vlines, lwd=0.1, col="grey")
+  ## mtext(chr.text, at = chr.at)
+  dev.off()
+}
+
+
 CbsSegment01 <- function(varbin.gc, bad.bins.file,
                          varbin.data, sample.name,
-                         alt.sample.name, alpha,
-                         nperm, undo.sd, min.width) {
+                         alpha, nperm, 
+                         undo.sd, min.width) {
 
   ## Load the gc content information
   gc <- read.table(varbin.gc, header=T)
@@ -257,39 +294,7 @@ CbsSegment01 <- function(varbin.gc, bad.bins.file,
   }
   cur.ratio.bad$seg.mean.LOWESS <- m[, 1]
 
-  chr <- cur.ratio.bad$chrom
-  chr.shift <- c(chr[-1], chr[length(chr)])
-
-  vlines <- c(1, cur.ratio$abspos[which(chr != chr.shift) + 1], cur.ratio$abspos[nrow(cur.ratio)])
-  hlines <- c(0.5, 1.0, 1.5, 2.0)
-  chr.text <- c(1:22, "X", "Y")
-  vlines.shift <- c(vlines[-1], 4 * 10^9)
-  chr.at <- vlines + (vlines.shift - vlines) / 2
-  x.at <- c(0, 0.5, 1, 1.5, 2, 2.5, 3) * 10^9
-  x.labels <- c("0", "0.5", "1.0", "1.5", "2.0", "2.5", "3.0")
-  y.at <- c(0.005, 0.020, 0.100, 0.500, 1.000, 2.000, 10, 100)
-  y.labels <- c("0.005", "0.020", "0.100", "0.5", "1", "2", "10", "100")
-
-  pdf(paste(sample.name, ".5k.wg.nobad.pdf", sep=""), height=3.5, width=6, useDingbats=FALSE)
-  par(pin=c(5.0, 1.75))
-  plot(x=cur.ratio.bad$abspos,
-       y=cur.ratio.bad$lowratio,
-       log="y", main=paste(sample.name, alt.sample.name),
-       xaxt="n", xlab="Genome Position Gb",
-       yaxt="n", ylab="Ratio", col="#517FFF", cex=0.01)
-
-  ## axis(1, at=x.at, labels=x.labels)
-  axis(2, at=y.at, labels=y.labels)
-  ## lines(x=cur.ratio.bad$abspos, y=cur.ratio.bad$lowratio, col="#CCCCCC")
-  ## points(x=cur.ratio.bad$abspos, y=cur.ratio.bad$seg.mean.LOWESS, col="#0000AA")
-  lines(x=cur.ratio.bad$abspos, y=cur.ratio.bad$seg.mean.LOWESS, col="red", cex=1.0)
-  ## abline(h=hlines)
-  ## abline(v=vlines)
-  abline(v=vlines, lwd=0.1, col="grey")
-  ## mtext(chr.text, at = chr.at)
-  dev.off()
-
-  return(list(ratio=cur.ratio.bad, segs=segs))
+  return(list(ratio=cur.ratio, ratio.bad=cur.ratio.bad, segs=segs))
 }
 
 main <- function() {
@@ -313,13 +318,16 @@ main <- function() {
 
   cbs.seg = CbsSegment01(varbin.gc=gc.file, bad.bins.file=bad.bins.file,
                          varbin.data=varbin.file, sample.name=sample.name,
-                         alt.sample.name="",
                          alpha=kAlphaValue,
                          nperm=kNPermutations,
                          undo.sd=kStandardDev,
                          min.width=kMinWidth)
-  cur.ratio.bad = cbs.seg$ratio
+  cur.ratio = cbs.seg$ratio
+  cur.ratio.bad = cbs.seg$ratio.bad
   segs = cbs.seg$segs
+  # plot segment
+  PlotSegment(cur.ratio, cur.ratio.bad, sample.name)
+  # save results
   write.table(cur.ratio.bad, sep="\t",
               file=paste(sample.name, ".hg19.5k.nobad.varbin.data.txt", sep=""),
               quote=F, row.names=F)
