@@ -45,7 +45,8 @@ def isInsertion(a):
 def operationSize(a):
     return a[1]
 
-def moveToFragEnd(read, fragStart, fragEnd, refStart, cigarIdx, cigarOffset):
+def findFragEndInReference(read, fragStart, fragEnd,
+                           refStart, cigarIdx, cigarOffset):
 
     refEnd = refStart
     fragPos = fragStart # keeps current position in the fragment
@@ -121,8 +122,8 @@ def main():
             cigarOffset = 0
             while fragEnd < len(read.query_alignment_sequence):
                 refEnd, cigarIdx, cigarOffset = \
-                    moveToFragEnd(read, fragStart, fragEnd,
-                                  refStart, cigarIdx, cigarOffset)
+                    findFragEndInReference(read, fragStart, fragEnd,
+                                           refStart, cigarIdx, cigarOffset)
                 fragSeq = read.query_alignment_sequence[fragStart:fragEnd]
                 if read.is_reverse: fragSeq = revcomp(fragSeq)
                 print('%s\t%d\t%d\t%s\t0\t+' % (read.reference_name,
