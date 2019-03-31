@@ -3,11 +3,14 @@
 ## Chromosome sizes
 The file `hg19.chrom.sizes` was obtained from the database associated
 with the UCSC Genome Browser using the `fetchChromSizes` script
-available through the browser. The format is two columns, one for the
-name of the chromosome, and one for the size of the chromosome. Not
-all chromosomes named in this file need to be used, but all
-chromosomes used in the CNV analysis must be present (with their
-sizes) in this file.
+available from:
+```
+https://github.com/ucscGenomeBrowser/kent/blob/master/src/utils/userApps/fetchChromSizes
+```
+The format is two columns, one for the name of the chromosome, and one
+for the size of the chromosome. Not all chromosomes named in this file
+need to be used, but all chromosomes used in the CNV analysis must be
+present (with their sizes) in this file.
 
 ## Bin definitions The CNV analysis begins with counts of reads in
 genomic bins. The bins are defined by have roughly equal size, but
