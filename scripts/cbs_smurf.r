@@ -155,7 +155,7 @@ SDUndoAll <- function (sd.short, ratio.data, sd.undo) {
     breakpoints.shift <- breakpoints + 1
 
     undo.keep = which(abs(segs$seg.mean[breakpoints]
-                          - segs$seg.mean[ breakpoints.shift]) <
+                          - segs$seg.mean[breakpoints.shift]) <
                       cur.sd * sd.undo)
     undo.breakpoints <- breakpoints[undo.keep]
 
