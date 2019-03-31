@@ -52,11 +52,12 @@ def loadChromInfo(chromInfoFile):
 
 def loadBins(chromOffsets, binsFile):
     bins = [Bin(i) for i in open(binsFile)]
-    binSorter = [(chromOffsets[i.chrom] + i.start, i) for i in bins]
+    binSorter = [(chromOffsets[bins[i].chrom] + bins[i].start, i)
+                 for i in range(len(bins))]
     binSorter.sort()
     binPosAbs = [i[0] for i in binSorter]
-    bins = [i[1] for i in binSorter]
-    return bins, binPosAbs
+    binLookup = [i[1] for i in binSorter]
+    return bins, binPosAbs, binLookup
 
 
 def main():
@@ -86,9 +87,15 @@ def main():
         print('genome size: %d' % genomeSize, file=sys.stdout)
 
 
+    # the "binLookup" below is used so the bins can later be output in
+    # the same order they appear in the input file, which is needed
+    # because other parts of the pipeline for CNV analysis are
+    # designed (poorly) to depend on information associated with line
+    # numbers across files, rather than relative to genomic
+    # coordinates
     if args.VERBOSE:
         print('loading bins', file=sys.stdout)
-    bins, binPosAbs = loadBins(chromOffsets, args.inBinsFile)
+    bins, binPosAbs, binLookup = loadBins(chromOffsets, args.inBinsFile)
     nBins = len(bins)
     # binChroms used to make sure only chroms that are part of the
     # bins are counted
@@ -105,7 +112,7 @@ def main():
     for read in mapfile.fetch():
         if read.reference_name in chromsWithBins:
             readPosAbs = chromOffsets[read.reference_name] + read.reference_start
-            binIdx = bisect_right(binPosAbs, readPosAbs) - 1
+            binIdx = binLookup[bisect_right(binPosAbs, readPosAbs) - 1]
             bins[binIdx].increment()
             totalReads += 1
     readsPerBin = float(totalReads)/nBins
