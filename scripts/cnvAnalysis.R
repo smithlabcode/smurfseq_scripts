@@ -194,9 +194,9 @@ SDUndoAll <- function (sd.short, ratio.data, sd.undo) {
 }
 
 
-PlotSegment <- function(cur.ratio, cur.ratio.bad, sample.name) {
+PlotSegment <- function(cur.ratio, cur.ratio.good, sample.name) {
 
-  chr <- cur.ratio.bad$chrom
+  chr <- cur.ratio.good$chrom
   chr.shift <- c(chr[-1], chr[length(chr)])
 
   vlines <- c(1, cur.ratio$abspos[which(chr != chr.shift) + 1],
@@ -213,18 +213,18 @@ PlotSegment <- function(cur.ratio, cur.ratio.bad, sample.name) {
   pdf(paste(sample.name, ".5k.wg.nobad.pdf", sep=""),
       height=3.5, width=6, useDingbats=FALSE)
   par(pin=c(5.0, 1.75))
-  plot(x=cur.ratio.bad$abspos,
-       y=cur.ratio.bad$lowratio,
+  plot(x=cur.ratio.good$abspos,
+       y=cur.ratio.good$lowratio,
        log="y", main=sample.name,
        xaxt="n", xlab="Genome Position Gb",
        yaxt="n", ylab="Ratio", col="#517FFF", cex=0.01)
 
   # axis(1, at=x.at, labels=x.labels)
   axis(2, at=y.at, labels=y.labels)
-  # lines(x=cur.ratio.bad$abspos, y=cur.ratio.bad$lowratio, col="#CCCCCC")
-  # points(x=cur.ratio.bad$abspos, y=cur.ratio.bad$seg.mean.LOWESS,
+  # lines(x=cur.ratio.good$abspos, y=cur.ratio.good$lowratio, col="#CCCCCC")
+  # points(x=cur.ratio.good$abspos, y=cur.ratio.good$seg.mean.LOWESS,
   # col="#0000AA")
-  lines(x=cur.ratio.bad$abspos, y=cur.ratio.bad$seg.mean.LOWESS,
+  lines(x=cur.ratio.good$abspos, y=cur.ratio.good$seg.mean.LOWESS,
         col="red", cex=1.0)
   ## abline(h=hlines)
   ## abline(v=vlines)
@@ -265,15 +265,15 @@ CBSSegment01 <- function(varbin.gc, bad.bins.file,
   ## Load the "bad" bins, which are pre-determined as having problems
   ## due to technical issues with the genome or the sequencing, etc.
   bad.bins <- read.table(bad.bins.file, header=F, as.is=T, stringsAsFactors=F)
-  cur.ratio.bad <- cur.ratio[-bad.bins[, 1], ]
+  cur.ratio.good <- cur.ratio[-bad.bins[, 1], ]
 
   set.seed(25)
 
   ## Do the work of the copy number analysis using CNA, and
   ## immediately apply smoothing to the result.
-  cna.result <- smooth.CNA(CNA(log2(cur.ratio.bad$lowratio),
-                               gc$chrom.arm[-bad.bins[, 1]],
-                               cur.ratio.bad$chrompos,
+  cna.result <- smooth.CNA(CNA(log2(cur.ratio.good$lowratio),
+                               gc$chrom[-bad.bins[, 1]],
+                               cur.ratio.good$chrompos,
                                data.type="logratio",
                                sampleid=sample.name))
 
@@ -309,16 +309,16 @@ CBSSegment01 <- function(varbin.gc, bad.bins.file,
                                      abs(work.segs$seg.mean)), ]
     if (work.segs.ord[1, "num.mark"] < min.width) {
       work.segs <- RemoveSegment(work.segs, work.segs.ord[1, "segnum"],
-                                 cur.ratio.bad, undo.sd)
+                                 cur.ratio.good, undo.sd)
     } else {
       discard.segs <- FALSE
     }
   }
-  work.segs <- SDUndoAll(work.segs, cur.ratio.bad, undo.sd)
+  work.segs <- SDUndoAll(work.segs, cur.ratio.good, undo.sd)
   segs <- work.segs
   #####  END NEW STUFF
 
-  m <- matrix(data=0, nrow=nrow(cur.ratio.bad), ncol=1)
+  m <- matrix(data=0, nrow=nrow(cur.ratio.good), ncol=1)
   prev.end <- 0
   for (i in 1:nrow(segs)) {
     cur.start <- prev.end + 1
@@ -326,9 +326,9 @@ CBSSegment01 <- function(varbin.gc, bad.bins.file,
     m[cur.start:cur.end, 1] <- 2^segs$seg.mean[i]
     prev.end <- cur.end
   }
-  cur.ratio.bad$seg.mean.LOWESS <- m[, 1]
+  cur.ratio.good$seg.mean.LOWESS <- m[, 1]
 
-  return(list(ratio=cur.ratio, ratio.bad=cur.ratio.bad, segs=segs))
+  return(list(ratio=cur.ratio, ratio.bad=cur.ratio.good, segs=segs))
 }
 
 main <- function() {
@@ -357,12 +357,12 @@ main <- function() {
                          undo.sd=kStandardDev,
                          min.width=kMinWidth)
   cur.ratio = cbs.seg$ratio
-  cur.ratio.bad = cbs.seg$ratio.bad
+  cur.ratio.good = cbs.seg$ratio.bad
   segs = cbs.seg$segs
   # plot segment
-  PlotSegment(cur.ratio, cur.ratio.bad, sample.name)
+  PlotSegment(cur.ratio, cur.ratio.good, sample.name)
   # save results
-  write.table(cur.ratio.bad, sep="\t",
+  write.table(cur.ratio.good, sep="\t",
               file=paste(sample.name, ".hg19.5k.nobad.varbin.data.txt",
                          sep=""),
               quote=F, row.names=F)
