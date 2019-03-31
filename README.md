@@ -1,4 +1,4 @@
-# SMURF-seq
+# SMURF-seq scripts
 
 SMURF-seq is a protocol for sequencing short reads on a long-read
 sequencer by randomly concatenating short fragments. This repo
@@ -6,6 +6,36 @@ contains the scripts we used to conduct initial analysis of SMURF-seq
 data in the context of copy-number profiling (with sequencing done on
 the Oxford MinION instrument), and to benchmark mapping methods for
 performance in mapping SMURF-seq reads.
+
+## Copy-number analysis
+
+The copy-number analysis we performed using SMURF-seq reads closely
+follows procedures already used in other publications. We first map
+the SMURF-seq reads using BWA with a specific set of parameters (see
+manuscript and supp info). Then the mapped fragments are given to
+a script that obtains the counts of reads in bins:
+```
+./getBinCounts.py -i mapped_smurf_reads.sam -c hg19.chrom.sizes \
+    -b bins_5k_hg19.bed -o bin_counts.bed -s bin_stats.txt
+```
+The input file `mapped_smurf_reads.sam` is just the mapped reads
+(e.g. with BWA). The file `hg19.chrom.size` is the size of all chroms
+in the reference genome. This file for the hg19 reference is supplied
+in the `data` directory in this repo, and was obtained from the UCSC
+Genome Browser's database. The pre-defined bins file `bins_5k_hg19.bed`
+is also in the `data` directory of this repo, and defines the 5000
+bins in the genome used for the CNV analysis. The first output file
+`bin_counts.bed` is like bedgraph format: it has the chrom, start and
+end given in `bins_5k_hg1.bed` but it also has two extra columns:
+one is the count of reads in that bin, and the final column is those
+counts divided by the average reads per bin. This information was
+determined based on what is required in the next script.
+
+In the next step we use an adaptation of a script originally due to
+ASDF.
+```
+./cnvAnalysis.R <bins-bed-file> <sample-name> <gc-content-file> <bad-bins>
+```
 
 ## Simulating SMURF-seq reads for evaluating mappers
 
@@ -18,6 +48,7 @@ well it recovers the known mapping locations. The steps are as follows.
    the sequencing technology of interest (in our case, the Oxford
    MinION). Use a standard long-read mapper, and make sure the output
    is in SAM format.
+
 2. Generate candidate short fragments: From the SAM format of the
    long-read mapping locations, generate candidate short fragments
    with known mapping locations. This is done with a script in the
@@ -33,6 +64,7 @@ well it recovers the known mapping locations. The steps are as follows.
    are the reference genome mapping coordinates for the short fragment
    obtained by arithmetic on the long-read reference location accounting
    for indels in the mapping.
+
 3. Filter the candidates to exclude deadzones: Any short fragments that
    would not map uniquely without the rest of the long read are excluded
    by using bedtools and a file of deadzones. We obtain the deadzones using
@@ -52,6 +84,7 @@ well it recovers the known mapping locations. The steps are as follows.
    ```
    The `good_candidates.bed` will be used to generate the simulated
    SMURF-seq reads.
+
 4. Randomly combine fragments into long reads: This step uses another script
    from the `scripts` directory:
    ```
@@ -68,6 +101,7 @@ well it recovers the known mapping locations. The steps are as follows.
    contains a list of the original mapping locations of each fragment
    in the reference genome, so later we can use these to evaluate mapping
    performance.
+
 5. Map the simulated reads: Select a mapping tools, set the parameters, and
    map the simulated reads in `simulated.fa` from the above step to the
    same reference genome used already. The output should be in SAM format,
@@ -85,20 +119,19 @@ well it recovers the known mapping locations. The steps are as follows.
    is reported, along with summary stats on the sizes of fragments identified
    by the mapper.
 
-## Python
+## Dependencies
 
-All Python scripts here are in Python3. The following non-standard
-libraries are used: pysam and numpy.
+-- Python: All Python scripts here are in Python3 (we used 3.6.8). The
+    following non-standard libraries are used: pysam (we used 0.15.0) and
+    numpy (we used 1.15.0).
 
-## R
+-- R: The R script `cnvAnalysis.R` uses the `DNAcopy` library.
 
-2. DNAcopy (R)
-
-## Software tools
-
-1. BWA
-2. bedtools
-2. samtools (1.9)
+-- Software tools: For the simulations/valuations we require
+    `bedtools` (we used v2.26.0). We also require the `deadzones`
+    program from `http://github.com/smithlabcode/utils` but this could
+    be substituted for any means of excluding unmappable regions.
+    In our CNV analysis, we used `bwa` (version...).
 
 ## SMURF-seq Scripts
 1. Map the reads:
