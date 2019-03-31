@@ -289,12 +289,7 @@ CbsSegment01 <- function(varbin.gc, bad.bins.file,
   ## mtext(chr.text, at = chr.at)
   dev.off()
 
-  write.table(cur.ratio.bad, sep="\t",
-              file=paste(sample.name, ".hg19.5k.nobad.varbin.data.txt", sep=""),
-              quote=F, row.names=F)
-  write.table(segs, sep="\t",
-              file=paste(sample.name, ".hg19.5k.nobad.varbin.short.txt", sep=""),
-              quote=F, row.names=F)
+  return(list(ratio=cur.ratio.bad, segs=segs))
 }
 
 main <- function() {
@@ -316,13 +311,21 @@ main <- function() {
   gc.file <- args[3]
   bad.bins.file <- args[4]
 
-  CbsSegment01(varbin.gc=gc.file, bad.bins.file=bad.bins.file,
+  cbs.seg = CbsSegment01(varbin.gc=gc.file, bad.bins.file=bad.bins.file,
                varbin.data=varbin.file, sample.name=sample.name,
                alt.sample.name="",
                alpha=kAlphaValue,
                nperm=kNPermutations,
                undo.sd=kStandardDev,
                min.width=kMinWidth)
+  cur.ratio.bad = cbs.seg$ratio
+  segs = cbs.seg$segs
+  write.table(cur.ratio.bad, sep="\t",
+              file=paste(sample.name, ".hg19.5k.nobad.varbin.data.txt", sep=""),
+              quote=F, row.names=F)
+  write.table(segs, sep="\t",
+              file=paste(sample.name, ".hg19.5k.nobad.varbin.short.txt", sep=""),
+              quote=F, row.names=F)
 }
 
 main()
