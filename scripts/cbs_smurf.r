@@ -16,7 +16,7 @@
 
 library("DNAcopy")
 
-LowessGc <- function(jtkx, jtky) {
+LowessGC <- function(jtkx, jtky) {
   jtklow <- lowess(jtkx, log(jtky), f=0.05)
   jtkz <- approx(jtklow$x, jtklow$y, jtkx)
   return(exp(log(jtky) - jtkz$y))
@@ -123,7 +123,7 @@ RemoveSegment <- function(rs.short, rs.seg.num, ratio.data, sd.undo) {
 }
 
 
-SdUndoAll <- function (sd.short, ratio.data, sd.undo) {
+SDUndoAll <- function (sd.short, ratio.data, sd.undo) {
 
   segs <- sd.short
   cur.sd <- mad(diff(ratio.data[, "lowratio"])) / sqrt(2)
@@ -137,7 +137,7 @@ SdUndoAll <- function (sd.short, ratio.data, sd.undo) {
     ## breakpoints <- which(chrom == chrom.shift)
     ### RISH: Fixed by adding as.numeric
     breakpoints <- which(as.numeric(chrom) == chrom.shift)
-    cat("SdUndoAll intrachrom breakpoints", length(breakpoints), "\n")
+    cat("SDUndoAll intrachrom breakpoints", length(breakpoints), "\n")
 
     if (length(breakpoints) < 1) {
       break
@@ -148,7 +148,7 @@ SdUndoAll <- function (sd.short, ratio.data, sd.undo) {
     undo.breakpoints <- breakpoints[which(abs(segs$seg.mean[breakpoints] -
                                               segs$seg.mean[breakpoints.shift]) < cur.sd * sd.undo)]
 
-    cat("SdUndoAll undo breakpoints", length(undo.breakpoints), "\n")
+    cat("SDUndoAll undo breakpoints", length(undo.breakpoints), "\n")
 
     if (length(undo.breakpoints) < 1) {
       break
@@ -165,8 +165,8 @@ SdUndoAll <- function (sd.short, ratio.data, sd.undo) {
     left.idx <- undo.df$segnum[min.index]
     right.idx <- left.idx + 1
 
-    cat("SdUndoAll left", FormatProgressMessage(segs, left.idx), "\n");
-    cat("SdUndoAll right", FormatProgressMessage(segs, right.idx), "\n");
+    cat("SDUndoAll left", FormatProgressMessage(segs, left.idx), "\n");
+    cat("SDUndoAll right", FormatProgressMessage(segs, right.idx), "\n");
 
     segs[left.idx, "loc.end"] <- segs[right.idx, "loc.end"]
     segs[left.idx, "seg.end"] <- segs[right.idx, "seg.end"]
@@ -216,7 +216,7 @@ PlotSegment <- function(cur.ratio, cur.ratio.bad, sample.name) {
 }
 
 
-CbsSegment01 <- function(varbin.gc, bad.bins.file,
+CBSSegment01 <- function(varbin.gc, bad.bins.file,
                          varbin.data, sample.name,
                          alpha, nperm, 
                          undo.sd, min.width) {
@@ -242,7 +242,7 @@ CbsSegment01 <- function(varbin.gc, bad.bins.file,
   a <- cur.ratio$bincount + 1
   cur.ratio$ratio <- a / mean(a)
   cur.ratio$gc.content <- gc$gc.content
-  cur.ratio$lowratio <- LowessGc(cur.ratio$gc.content, cur.ratio$ratio)
+  cur.ratio$lowratio <- LowessGC(cur.ratio$gc.content, cur.ratio$ratio)
 
   ## Load the "bad" bins, which are pre-determined as having problems
   ## due to technical issues with the genome or the sequencing, etc.
@@ -294,7 +294,7 @@ CbsSegment01 <- function(varbin.gc, bad.bins.file,
       discard.segs <- FALSE
     }
   }
-  work.segs <- SdUndoAll(work.segs, cur.ratio.bad, undo.sd)
+  work.segs <- SDUndoAll(work.segs, cur.ratio.bad, undo.sd)
   segs <- work.segs
   #####  END NEW STUFF
 
@@ -330,7 +330,7 @@ main <- function() {
   gc.file <- args[3]
   bad.bins.file <- args[4]
 
-  cbs.seg = CbsSegment01(varbin.gc=gc.file, bad.bins.file=bad.bins.file,
+  cbs.seg = CBSSegment01(varbin.gc=gc.file, bad.bins.file=bad.bins.file,
                          varbin.data=varbin.file, sample.name=sample.name,
                          alpha=kAlphaValue,
                          nperm=kNPermutations,
