@@ -312,12 +312,12 @@ main <- function() {
   bad.bins.file <- args[4]
 
   cbs.seg = CbsSegment01(varbin.gc=gc.file, bad.bins.file=bad.bins.file,
-               varbin.data=varbin.file, sample.name=sample.name,
-               alt.sample.name="",
-               alpha=kAlphaValue,
-               nperm=kNPermutations,
-               undo.sd=kStandardDev,
-               min.width=kMinWidth)
+                         varbin.data=varbin.file, sample.name=sample.name,
+                         alt.sample.name="",
+                         alpha=kAlphaValue,
+                         nperm=kNPermutations,
+                         undo.sd=kStandardDev,
+                         min.width=kMinWidth)
   cur.ratio.bad = cbs.seg$ratio
   segs = cbs.seg$segs
   write.table(cur.ratio.bad, sep="\t",
