@@ -24,8 +24,13 @@ files are named like `bins_5k_hg19.bed`.
 
 ## GC content information
 The analysis uses information about GC content of each bin. This
-information is contained in files named `bins_5k_hg19_gc.bed` and
-these have bedgraph format (chrom, start, end, value). The
+information is contained in files named `bins_5k_hg19_gc.txt` and
+these are loaded by an R script as data frames. The R script uses the
+order of lines to associate the GC content values with the genomic
+bins (not good design). Only one field is used, and has column name
+`gc.content`. These files also have a rowname in the form
+`chr1_123456` to indicate the starting position of the associated bin
+(row names are ignored when these files are used).
 
 ## Bad bins
 Experience of others who have run similar analyses using a similar
