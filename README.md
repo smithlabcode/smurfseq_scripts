@@ -61,7 +61,17 @@ well it recovers the known mapping locations. The steps are as follows.
    Above, the `-n` parameter indicates an identifying for the original
    data set, which goes into the read name so we can map multiple
    simulations together but later take them apart and analyze the
-   results separately.
+   results separately. The `-f`, `-l` and `-r` give the number of
+   fragments, their length and the number of reads to simulate (the
+   fragment length could be inferred from the input). In the output,
+   the name of each simulated SMURF-seq read in `simulated.fa`
+   contains a list of the original mapping locations of each fragment
+   in the reference genome, so later we can use these to evaluate mapping
+   performance.
+5. Map the simulated reads: Select a mapping tools, set the parameters, and
+   map the simulated reads in `simulated.fa` from the above step to the
+   same reference genome used already. The output should be in SAM format.
+6. Evaluate the mapping performance:
 
 ## Python
 
