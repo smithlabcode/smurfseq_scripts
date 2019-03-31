@@ -250,10 +250,10 @@ CbsSegment01 <- function(varbin.gc, bad.bins.file,
   m <- matrix(data=0, nrow=nrow(cur.ratio.bad), ncol=1)
   prev.end <- 0
   for (i in 1:nrow(segs)) {
-    thisStart <- prev.end + 1
-    this.end <- prev.end + segs$num.mark[i]
-    m[thisStart:this.end, 1] <- 2^segs$seg.mean[i]
-    prev.end <- this.end
+    cur.start <- prev.end + 1
+    cur.end <- prev.end + segs$num.mark[i]
+    m[cur.start:cur.end, 1] <- 2^segs$seg.mean[i]
+    prev.end <- cur.end
   }
   cur.ratio.bad$seg.mean.LOWESS <- m[, 1]
 
