@@ -263,7 +263,7 @@ CbsSegment01 <- function(varbin.gc, bad.bins.file,
   vlines <- c(1, cur.ratio$abspos[which(chr != chr.shift) + 1], cur.ratio$abspos[nrow(cur.ratio)])
   hlines <- c(0.5, 1.0, 1.5, 2.0)
   chr.text <- c(1:22, "X", "Y")
-  vlines.shift <- c(vlines[-1], 4*10^9)
+  vlines.shift <- c(vlines[-1], 4 * 10^9)
   chr.at <- vlines + (vlines.shift - vlines) / 2
   x.at <- c(0, 0.5, 1, 1.5, 2, 2.5, 3) * 10^9
   x.labels <- c("0", "0.5", "1.0", "1.5", "2.0", "2.5", "3.0")
@@ -271,7 +271,7 @@ CbsSegment01 <- function(varbin.gc, bad.bins.file,
   y.labels <- c("0.005", "0.020", "0.100", "0.5", "1", "2", "10", "100")
 
   pdf(paste(sample.name, ".5k.wg.nobad.pdf", sep=""), height=3.5, width=6, useDingbats=FALSE)
-  par(pin=c(5.0,1.75))
+  par(pin=c(5.0, 1.75))
   plot(x=cur.ratio.bad$abspos,
        y=cur.ratio.bad$lowratio,
        log="y", main=paste(sample.name, alt.sample.name),
