@@ -30,39 +30,33 @@ RemoveSegment <- function(rs.short, rs.seg.num, ratio.data, sd.undo) {
 
   if (rs.seg.num == 1) { # current is first segment
     append.left <- FALSE
-  }
-  else if (rs.seg.num == nrow(rs.short)) {
+  } else if (rs.seg.num == nrow(rs.short)) {
     append.left <- TRUE
-  }
-  else {
+  } else {
     right.idx <- rs.seg.num + 1
     left.idx <- rs.seg.num - 1
 
     if (rs.short[right.idx, "chrom"] != rs.short[rs.seg.num, "chrom"]) {
       append.left <- TRUE
-    }
-    else {
+    } else {
       if (rs.short[left.idx, "chrom"] != rs.short[rs.seg.num, "chrom"]) {
         append.left <- FALSE
-      }
-      else {
+      } else {
         if (abs(rs.short[left.idx, "seg.mean"] - rs.short[rs.seg.num, "seg.mean"]) <
             abs(rs.short[right.idx, "seg.mean"] - rs.short[rs.seg.num, "seg.mean"])) {
           append.left <- TRUE
           check.sd.undo <- TRUE
+        } else {
+          append.left <- FALSE
+          check.sd.undo <- TRUE
         }
-      else {
-        append.left <- FALSE
-        check.sd.undo <- TRUE
-      }
       }
     }
   }
   apnd.idx <- 0
   if (append.left) {
     apnd.idx <- rs.seg.num - 1
-  }
-  else {
+  } else {
     apnd.idx <- rs.seg.num + 1
   }
 
@@ -70,8 +64,7 @@ RemoveSegment <- function(rs.short, rs.seg.num, ratio.data, sd.undo) {
   if (append.left) {
     segs[apnd.idx, "loc.end"] <- segs[rs.seg.num, "loc.end"]
     segs[apnd.idx, "seg.end"] <- segs[rs.seg.num, "seg.end"]
-  }
-  else {
+  } else {
     segs[apnd.idx, "loc.start"] <- segs[rs.seg.num, "loc.start"]
     segs[apnd.idx, "seg.start"] <- segs[rs.seg.num, "seg.start"]
   }
@@ -89,8 +82,7 @@ RemoveSegment <- function(rs.short, rs.seg.num, ratio.data, sd.undo) {
     if (append.left) {
       left.idx <- apnd.idx
       right.idx <- apnd.idx + 1
-    }
-    else {
+    } else {
       left.idx <- apnd.idx - 2
       right.idx <- apnd.idx - 1
     }
@@ -247,8 +239,7 @@ CbsSegment01 <- function(varbin.gc, bad.bins.file,
     work.segs.ord <- work.segs[order(work.segs$num.mark, abs(work.segs$seg.mean)), ]
     if (work.segs.ord[1, "num.mark"] < min.width) {
       work.segs <- RemoveSegment(work.segs, work.segs.ord[1, "segnum"], cur.ratio.bad, undo.sd)
-    }
-    else {
+    } else {
       discard.segs <- FALSE
     }
   }
