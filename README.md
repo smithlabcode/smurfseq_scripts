@@ -70,17 +70,34 @@ well it recovers the known mapping locations. The steps are as follows.
    performance.
 5. Map the simulated reads: Select a mapping tools, set the parameters, and
    map the simulated reads in `simulated.fa` from the above step to the
-   same reference genome used already. The output should be in SAM format.
-6. Evaluate the mapping performance:
+   same reference genome used already. The output should be in SAM format,
+   and we will assume it is named `simulated_out.sam`.
+
+6. Evaluate the mapping performance: here we use a script from the `scripts`
+   directory:
+   ```
+   ./evalSmurfSim.py -f simulated.fa -s simulated_out.sam -l 100
+   ```
+   This script computes precision and recall at the level of recovering
+   fragments and at the level of correctly determining mapping location
+   for each nucleotide in the simulated reads. In addition, the portion of
+   each simulated read that is mapped in at least one identified fragment
+   is reported, along with summary stats on the sizes of fragments identified
+   by the mapper.
 
 ## Python
 
-## Library Dependencies
-1. pysam (python)
+All Python scripts here are in Python3. The following non-standard
+libraries are used: pysam and numpy.
+
+## R
+
 2. DNAcopy (R)
 
-## Software Dependencies
+## Software tools
+
 1. BWA
+2. bedtools
 2. samtools (1.9)
 
 ## SMURF-seq Scripts
