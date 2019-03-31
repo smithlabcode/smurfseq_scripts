@@ -183,3 +183,5 @@ TSWLatexianTemp*
 # editor files 
 *.swp
 *.swo
+# scripts
+scripts/dip*
