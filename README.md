@@ -11,9 +11,21 @@ performance in mapping SMURF-seq reads.
 
 The copy-number analysis we performed using SMURF-seq reads closely
 follows procedures already used in other publications. We first map
-the SMURF-seq reads using BWA with a specific set of parameters (see
-manuscript and supp info). Then the mapped fragments are given to
-a script that obtains the counts of reads in bins:
+the SMURF-seq reads using BWA:
+```
+bwa mem -x ont2d -k 12 -W 12 \
+    -A 1 -B 2 -O 1 -E 1 -T 30 bwa-mem/index/hg19.fa smurf_reads.fa
+```
+The parameters for the Smith-Waterman scoring ('A', 'B', 'O' and 'E')
+were determined using the simulation approach outined below (see also
+manuscript and supp info). The 'T' flag gives the minimum alignment
+score to output. The 'k' gives the size of k-mers to use for
+seeds. The 'W' indicates to discard a chain if seed bases are shorter
+than this value. The 'k' and 'W' are set to be liberal to catch and
+evaluate as many candidate mappings as possible.
+
+Then the mapped fragments are given to a script that obtains the
+counts of reads in bins:
 ```
 ./getBinCounts.py -i mapped_smurf_reads.sam -c hg19.chrom.sizes \
     -b bins_5k_hg19.bed -o bin_counts.bed -s bin_stats.txt
@@ -52,7 +64,7 @@ well it recovers the known mapping locations. The steps are as follows.
 2. Generate candidate short fragments: From the SAM format of the
    long-read mapping locations, generate candidate short fragments
    with known mapping locations. This is done with a script in the
-   `scipts` directory as follows:
+   `scripts` directory as follows:
    ```
    $ ./getFragsFromLongReads.py -s long_reads_mapped.sam -l 100 > candidates.bed
    ```
