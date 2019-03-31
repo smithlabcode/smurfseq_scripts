@@ -56,8 +56,10 @@ RemoveSegment <- function(rs.short, rs.seg.num, ratio.data, sd.undo) {
       if (rs.short[left.idx, "chrom"] != rs.short[rs.seg.num, "chrom"]) {
         append.left <- FALSE
       } else {
-        if (abs(rs.short[left.idx, "seg.mean"] - rs.short[rs.seg.num, "seg.mean"]) <
-            abs(rs.short[right.idx, "seg.mean"] - rs.short[rs.seg.num, "seg.mean"])) {
+        if (abs(rs.short[left.idx, "seg.mean"] 
+                - rs.short[rs.seg.num, "seg.mean"]) <
+            abs(rs.short[right.idx, "seg.mean"]
+                - rs.short[rs.seg.num, "seg.mean"])) {
           append.left <- TRUE
           check.sd.undo <- TRUE
         } else {
@@ -83,8 +85,11 @@ RemoveSegment <- function(rs.short, rs.seg.num, ratio.data, sd.undo) {
     segs[apnd.idx, "seg.start"] <- segs[rs.seg.num, "seg.start"]
   }
 
-  segs[apnd.idx, "num.mark"] <- segs[apnd.idx, "num.mark"] + segs[rs.seg.num, "num.mark"]
-  segs[apnd.idx, "seg.mean"] <- mean(log2(ratio.data$lowratio[segs[apnd.idx, "seg.start"]:segs[apnd.idx, "seg.end"]]))
+  segs[apnd.idx, "num.mark"] <- (segs[apnd.idx, "num.mark"] 
+                                 + segs[rs.seg.num, "num.mark"])
+  segs[apnd.idx, "seg.mean"] <- mean(log2(ratio.data$lowratio[
+                                          segs[apnd.idx, "seg.start"]
+                                          :segs[apnd.idx, "seg.end"]]))
 
   cat('append', FormatProgressMessage(segs, apnd.idx), '\n');
 
@@ -100,7 +105,8 @@ RemoveSegment <- function(rs.short, rs.seg.num, ratio.data, sd.undo) {
       left.idx <- apnd.idx - 2
       right.idx <- apnd.idx - 1
     }
-    ##cur.sd <- sd(ratio.data[segs$seg.start[left.idx]:segs$seg.start[right.idx], "lowratio"])
+    # cur.sd <- sd(ratio.data[segs$seg.start[left.idx]:
+    # segs$seg.start[right.idx], "lowratio"])
     cur.sd <- mad(diff(ratio.data[, "lowratio"])) / sqrt(2)
 
     if (abs(segs$seg.mean[left.idx] -
@@ -112,8 +118,11 @@ RemoveSegment <- function(rs.short, rs.seg.num, ratio.data, sd.undo) {
       ##  remove breakpoint
       segs[left.idx, "loc.end"] <- segs[right.idx, "loc.end"]
       segs[left.idx, "seg.end"] <- segs[right.idx, "seg.end"]
-      segs[left.idx, "num.mark"] <- segs[left.idx, "num.mark"] + segs[right.idx, "num.mark"]
-      segs[left.idx, "seg.mean"] <- mean(log2(ratio.data$lowratio[segs[left.idx, "seg.start"]:segs[right.idx, "seg.end"]]))
+      segs[left.idx, "num.mark"] <- (segs[left.idx, "num.mark"] +
+                                     segs[right.idx, "num.mark"])
+      segs[left.idx, "seg.mean"] <- mean(log2(ratio.data$lowratio[
+                                              segs[left.idx, "seg.start"]
+                                              :segs[right.idx, "seg.end"]]))
       segs <- segs[-right.idx, ]
       segs$segnum <- seq(1:nrow(segs))
     }
@@ -145,8 +154,10 @@ SDUndoAll <- function (sd.short, ratio.data, sd.undo) {
 
     breakpoints.shift <- breakpoints + 1
 
-    undo.breakpoints <- breakpoints[which(abs(segs$seg.mean[breakpoints] -
-                                              segs$seg.mean[breakpoints.shift]) < cur.sd * sd.undo)]
+    undo.keep = which(abs(segs$seg.mean[breakpoints] 
+                          - segs$seg.mean[ breakpoints.shift]) < 
+                      cur.sd * sd.undo)
+    undo.breakpoints <- breakpoints[undo.keep]
 
     cat("SDUndoAll undo breakpoints", length(undo.breakpoints), "\n")
 
@@ -170,8 +181,11 @@ SDUndoAll <- function (sd.short, ratio.data, sd.undo) {
 
     segs[left.idx, "loc.end"] <- segs[right.idx, "loc.end"]
     segs[left.idx, "seg.end"] <- segs[right.idx, "seg.end"]
-    segs[left.idx, "num.mark"] <- segs[left.idx, "num.mark"] + segs[right.idx, "num.mark"]
-    segs[left.idx, "seg.mean"] <- mean(log2(ratio.data$lowratio[segs[left.idx, "seg.start"]:segs[right.idx, "seg.end"]]))
+    segs[left.idx, "num.mark"] <- (segs[left.idx, "num.mark"] 
+                                   + segs[right.idx, "num.mark"])
+    segs[left.idx, "seg.mean"] <- mean(log2(ratio.data$lowratio[
+                                            segs[left.idx, "seg.start"]:
+                                            segs[right.idx, "seg.end"]]))
     segs <- segs[-right.idx, ]
     segs$segnum <- seq(1:nrow(segs))
   }
@@ -185,7 +199,8 @@ PlotSegment <- function(cur.ratio, cur.ratio.bad, sample.name) {
   chr <- cur.ratio.bad$chrom
   chr.shift <- c(chr[-1], chr[length(chr)])
 
-  vlines <- c(1, cur.ratio$abspos[which(chr != chr.shift) + 1], cur.ratio$abspos[nrow(cur.ratio)])
+  vlines <- c(1, cur.ratio$abspos[which(chr != chr.shift) + 1], 
+              cur.ratio$abspos[nrow(cur.ratio)])
   hlines <- c(0.5, 1.0, 1.5, 2.0)
   chr.text <- c(1:22, "X", "Y")
   vlines.shift <- c(vlines[-1], 4 * 10^9)
@@ -195,7 +210,8 @@ PlotSegment <- function(cur.ratio, cur.ratio.bad, sample.name) {
   y.at <- c(0.005, 0.020, 0.100, 0.500, 1.000, 2.000, 10, 100)
   y.labels <- c("0.005", "0.020", "0.100", "0.5", "1", "2", "10", "100")
 
-  pdf(paste(sample.name, ".5k.wg.nobad.pdf", sep=""), height=3.5, width=6, useDingbats=FALSE)
+  pdf(paste(sample.name, ".5k.wg.nobad.pdf", sep=""), 
+      height=3.5, width=6, useDingbats=FALSE)
   par(pin=c(5.0, 1.75))
   plot(x=cur.ratio.bad$abspos,
        y=cur.ratio.bad$lowratio,
@@ -203,11 +219,13 @@ PlotSegment <- function(cur.ratio, cur.ratio.bad, sample.name) {
        xaxt="n", xlab="Genome Position Gb",
        yaxt="n", ylab="Ratio", col="#517FFF", cex=0.01)
 
-  ## axis(1, at=x.at, labels=x.labels)
+  # axis(1, at=x.at, labels=x.labels)
   axis(2, at=y.at, labels=y.labels)
-  ## lines(x=cur.ratio.bad$abspos, y=cur.ratio.bad$lowratio, col="#CCCCCC")
-  ## points(x=cur.ratio.bad$abspos, y=cur.ratio.bad$seg.mean.LOWESS, col="#0000AA")
-  lines(x=cur.ratio.bad$abspos, y=cur.ratio.bad$seg.mean.LOWESS, col="red", cex=1.0)
+  # lines(x=cur.ratio.bad$abspos, y=cur.ratio.bad$lowratio, col="#CCCCCC")
+  # points(x=cur.ratio.bad$abspos, y=cur.ratio.bad$seg.mean.LOWESS, 
+  # col="#0000AA")
+  lines(x=cur.ratio.bad$abspos, y=cur.ratio.bad$seg.mean.LOWESS, 
+        col="red", cex=1.0)
   ## abline(h=hlines)
   ## abline(v=vlines)
   abline(v=vlines, lwd=0.1, col="grey")
@@ -287,9 +305,11 @@ CBSSegment01 <- function(varbin.gc, bad.bins.file,
 
   discard.segs <- TRUE
   while (discard.segs) {
-    work.segs.ord <- work.segs[order(work.segs$num.mark, abs(work.segs$seg.mean)), ]
+    work.segs.ord <- work.segs[order(work.segs$num.mark, 
+                                     abs(work.segs$seg.mean)), ]
     if (work.segs.ord[1, "num.mark"] < min.width) {
-      work.segs <- RemoveSegment(work.segs, work.segs.ord[1, "segnum"], cur.ratio.bad, undo.sd)
+      work.segs <- RemoveSegment(work.segs, work.segs.ord[1, "segnum"],
+                                 cur.ratio.bad, undo.sd)
     } else {
       discard.segs <- FALSE
     }
@@ -343,10 +363,12 @@ main <- function() {
   PlotSegment(cur.ratio, cur.ratio.bad, sample.name)
   # save results
   write.table(cur.ratio.bad, sep="\t",
-              file=paste(sample.name, ".hg19.5k.nobad.varbin.data.txt", sep=""),
+              file=paste(sample.name, ".hg19.5k.nobad.varbin.data.txt", 
+                         sep=""),
               quote=F, row.names=F)
   write.table(segs, sep="\t",
-              file=paste(sample.name, ".hg19.5k.nobad.varbin.short.txt", sep=""),
+              file=paste(sample.name, ".hg19.5k.nobad.varbin.short.txt", 
+                         sep=""),
               quote=F, row.names=F)
 }
 
