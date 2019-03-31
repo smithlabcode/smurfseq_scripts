@@ -1,7 +1,69 @@
 # SMURF-seq
+
 SMURF-seq is a protocol for sequencing short reads on a long-read
-sequencer. This repo contains the scripts to map the reads from
-a SMURF-seq run.
+sequencer by randomly concatenating short fragments. This repo
+contains the scripts we used to conduct initial analysis of SMURF-seq
+data in the context of copy-number profiling (with sequencing done on
+the Oxford MinION instrument), and to benchmark mapping methods for
+performance in mapping SMURF-seq reads.
+
+## Simulating SMURF-seq reads for evaluating mappers
+
+The simulation procedure takes mapped long reads and uses them to
+generate short fragments with a known mapping location. Since the
+mapping location is known, we can assess a mapping strategy by how
+well it recovers the known mapping locations. The steps are as follows.
+
+1. Select and map long reads: The data set should be from WGS using
+   the sequencing technology of interest (in our case, the Oxford
+   MinION). Use a standard long-read mapper, and make sure the output
+   is in SAM format.
+2. Generate candidate short fragments: From the SAM format of the
+   long-read mapping locations, generate candidate short fragments
+   with known mapping locations. This is done with a script in the
+   `scipts` directory as follows:
+   ```
+   $ ./getFragsFromLongReads.py -s long_reads_mapped.sam -l 100 > candidates.bed
+   ```
+   The candidates are encoded in 6-col BED format with the name column
+   (the 4th) encoding the DNA sequence of the fragment. The parameter
+   `-l` indicates the length of the candidate fragments to generate.
+   Only uniquely mapping long reads are used for generating candidate
+   fragments. The coordinates for each line in the `candidates.bed` file
+   are the reference genome mapping coordinates for the short fragment
+   obtained by arithmetic on the long-read reference location accounting
+   for indels in the mapping.
+3. Filter the candidates to exclude deadzones: Any short fragments that
+   would not map uniquely without the rest of the long read are excluded
+   by using bedtools and a file of deadzones. We obtain the deadzones using
+   the program `deadzones` available from `http://github.com/smithlabcode/utils`
+   and it will generate deadzones for a given read length. We used 40 bp, which
+   is conservative if the candidate fragments are longer than 40 bp. The
+   deadzone k-mer should not be larger than the candidate fragment size. The
+   program is run as follows:
+   ```
+   $ ./deadzones -k 40 -o dz_hg19_40.bed hg19.fa
+   ```
+   This will use lots of memory and might be slow, but it has parameters
+   to make it use less memory and it only needs to be done once.
+   To filter the candidate fragments, use `bedtools` as follows:
+   ```
+   bedtools intersect -v -a candidates.bed -b dz_hg19_40.bed > good_frags.bed
+   ```
+   The `good_candidates.bed` will be used to generate the simulated
+   SMURF-seq reads.
+4. Randomly combine fragments into long reads: This step uses another script
+   from the `scripts` directory:
+   ```
+   ./readsFromFrags.py -n FAB42704 -f 10 -l 100 -r 10000 \
+       -b good_frags.bed -o simulated.fa
+   ```
+   Above, the `-n` parameter indicates an identifying for the original
+   data set, which goes into the read name so we can map multiple
+   simulations together but later take them apart and analyze the
+   results separately.
+
+## Python
 
 ## Library Dependencies
 1. pysam (python)
@@ -21,10 +83,10 @@ Andrew D. Smith andrewds@usc.edu
 
 Rishvanth K. Prabakar kaliappa@usc.edu
 
-## Copyright and License Information    
+## Copyright and License Information
 Copyright (C) 2018 University of Southern California
 
-Authors: Rishvanth K. Prabakar 
+Authors: Rishvanth K. Prabakar
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
