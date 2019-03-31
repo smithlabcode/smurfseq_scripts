@@ -51,10 +51,10 @@ RemoveSegment <- function(rs.short, rs.seg.num, ratio.data, sd.undo) {
           append.left <- TRUE
           check.sd.undo <- TRUE
         }
-        else {
-          append.left <- FALSE
-          check.sd.undo <- TRUE
-        }
+      else {
+        append.left <- FALSE
+        check.sd.undo <- TRUE
+      }
       }
     }
   }
@@ -174,9 +174,9 @@ SdUndoAll <- function (sd.short, ratio.data, sd.undo) {
 }
 
 CbsSegment01 <- function(varbin.gc, bad.bins.file,
-                          varbin.data, sample.name,
-                          alt.sample.name, alpha,
-                          nperm, undo.sd, min.width) {
+                         varbin.data, sample.name,
+                         alt.sample.name, alpha,
+                         nperm, undo.sd, min.width) {
 
   ## Load the gc content information
   gc <- read.table(varbin.gc, header=T)
