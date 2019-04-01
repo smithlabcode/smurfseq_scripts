@@ -240,13 +240,13 @@ CBSSegment01 <- function(varbin.gc, bad.bins.file,
                          undo.sd, min.width) {
 
   ## Load the gc content information
-  gc <- read.table(varbin.gc, header=T)
+  gc <- read.table(varbin.gc, header=T, row.names=1)
 
   ## Convert the chromosome names into numeric ids sorted by
   ## chromosome number with sex chroms at the end
-  chrom.numeric <- substring(gc$bin.chrom, 4)
-  chrom.numeric[which(gc$bin.chrom == "chrX")] <- "23"
-  chrom.numeric[which(gc$bin.chrom == "chrY")] <- "24"
+  chrom.numeric <- sub('_.*', '', substring(rownames(gc), 4))
+  chrom.numeric[chrom.numeric == 'X'] <- "23"
+  chrom.numeric[chrom.numeric == 'Y'] <- "24"
   chrom.numeric <- as.numeric(chrom.numeric)
 
   ## Load the data in the form of bin counts for genomic
