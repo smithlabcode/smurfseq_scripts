@@ -244,7 +244,6 @@ CBSSegment01 <- function(varbin.gc, bad.bins.file,
 
   ## Convert the chromosome names into numeric ids sorted by
   ## chromosome number with sex chroms at the end
-  gc$chrom <- sub('_.*', '', rownames(gc))
   chrom.numeric <- sub('_.*', '', substring(rownames(gc), 4))
   chrom.numeric[chrom.numeric == 'X'] <- "23"
   chrom.numeric[chrom.numeric == 'Y'] <- "24"
@@ -273,7 +272,7 @@ CBSSegment01 <- function(varbin.gc, bad.bins.file,
   ## Do the work of the copy number analysis using CNA, and
   ## immediately apply smoothing to the result.
   cna.result <- smooth.CNA(CNA(log2(cur.ratio.good$lowratio),
-                               gc$chrom[-bad.bins[, 1]],
+                               gc$chrom.arm[-bad.bins[, 1]],
                                cur.ratio.good$chrompos,
                                data.type="logratio",
                                sampleid=sample.name))
