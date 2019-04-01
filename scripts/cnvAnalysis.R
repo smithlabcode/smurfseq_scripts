@@ -244,6 +244,7 @@ CBSSegment01 <- function(varbin.gc, bad.bins.file,
 
   ## Convert the chromosome names into numeric ids sorted by
   ## chromosome number with sex chroms at the end
+  gc$chrom <- sub('_.*', '', rownames(gc))
   chrom.numeric <- sub('_.*', '', substring(rownames(gc), 4))
   chrom.numeric[chrom.numeric == 'X'] <- "23"
   chrom.numeric[chrom.numeric == 'Y'] <- "24"
