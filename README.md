@@ -46,8 +46,19 @@ determined based on what is required in the next script.
 In the next step we use an adaptation of a script originally due to
 ASDF.
 ```
-./cnvAnalysis.R bin_counts.bed SampelName bins_5k_hg19_gc.txt bins_5k_hg19_exclude.txt
+./cnvAnalysis.R bin_counts.bed SampleName bins_5k_hg19_gc.txt bins_5k_hg19_exclude.txt
 ```
+The input file `bin_counts.bed` is the same as described above. The input file 
+`bins_5k_hg19_gc.txt` is the GC content of each bin. The input `bins_5k_hg19_exclude.txt`
+is used to exclude certain parts of the genome that attract an unusual amount of reads. 
+The format is simply the line numbers, in the corresponding bed file, of the bins
+to exclude from the CNV analysis. The first output is a PDF file 
+`{SampleName}.5k.wg.nobad.pdf` for the CNV profile. In addition,
+two tables are saved: one table 
+`{SampleName}.hg19.5k.nobad.varbin.data.txt` with the information
+(chromosome, genome position,  GC content, bin count, segmented value) for each bin, and 
+the other table `{SampleName}.hg19.5k.nobad.varbin.short.txt`
+summerizing the breakpoints in the CNV profile.
 
 ## Simulating SMURF-seq reads for evaluating mappers
 
