@@ -133,13 +133,13 @@ well it recovers the known mapping locations. The steps are as follows.
 
 ## Dependencies
 
--- Python: All Python scripts here are in Python3 (we used 3.6.8). The
+* [Python:] All Python scripts here are in Python3 (we used 3.6.8). The
     following non-standard libraries are used: pysam (we used 0.15.0) and
     numpy (we used 1.15.0).
 
--- R: The R script `cnvAnalysis.R` uses the `DNAcopy` library.
+* [R:] The R script `cnvAnalysis.R` uses the `DNAcopy` library.
 
--- Software tools: For the simulations/valuations we require
+* [Software tools:] For the simulations/valuations we require
     `bedtools` (we used v2.26.0). We also require the `deadzones`
     program from `http://github.com/smithlabcode/utils` but this could
     be substituted for any means of excluding unmappable regions.
