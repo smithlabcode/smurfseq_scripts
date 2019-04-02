@@ -210,7 +210,7 @@ PlotSegment <- function(cur.ratio, cur.ratio.good, sample.name) {
   y.at <- c(0.005, 0.020, 0.100, 0.500, 1.000, 2.000, 10, 100)
   y.labels <- c("0.005", "0.020", "0.100", "0.5", "1", "2", "10", "100")
 
-  pdf(paste(sample.name, ".5k.wg.nobad.pdf", sep=""),
+  pdf(sprintf('%s.pdf', sample.name),
       height=3.5, width=6, useDingbats=FALSE)
   par(pin=c(5.0, 1.75))
   plot(x=cur.ratio.good$abspos,
@@ -363,12 +363,10 @@ main <- function() {
   PlotSegment(cur.ratio, cur.ratio.good, sample.name)
   # save results
   write.table(cur.ratio.good, sep="\t",
-              file=paste(sample.name, ".hg19.5k.nobad.varbin.data.txt",
-                         sep=""),
+              file=sprintf("%s.data.txt", sample.name),
               quote=F, row.names=F)
   write.table(segs, sep="\t",
-              file=paste(sample.name, ".hg19.5k.nobad.varbin.short.txt",
-                         sep=""),
+              file=sprintf("%s.short.txt", sample.name),
               quote=F, row.names=F)
 }
 
