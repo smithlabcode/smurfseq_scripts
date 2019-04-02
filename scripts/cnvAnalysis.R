@@ -334,6 +334,8 @@ CBSSegment01 <- function(varbin.gc, bad.bins.file,
 main <- function() {
 
   # CONSTANTS
+  ## Parameters as in 'Baslan, Timour, et al. "Genome-wide copy number analysis of single
+  ## cells." Nature protocols 7.6 (2012): 1024.'
   kAlphaValue  <- 0.02
   kNPermutations  <- 1000
   kStandardDev <- 0.5
