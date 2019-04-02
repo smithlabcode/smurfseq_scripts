@@ -156,20 +156,15 @@ well it recovers the known mapping locations. The steps are as follows.
     be substituted for any means of excluding unmappable regions.
     In our CNV analysis, we used `bwa` (version...).
 
-## SMURF-seq Scripts
-1. Map the reads:
-
-  ./map/smurfseq-map.sh [reference] [reads]
-
 ## Contacts and Bug Reports
-Andrew D. Smith andrewds@usc.edu
 
-Rishvanth K. Prabakar kaliappa@usc.edu
+- Andrew D. Smith andrewds@usc.edu
+- Rishvanth K. Prabakar kaliappa@usc.edu
 
 ## Copyright and License Information
-Copyright (C) 2018 University of Southern California
+Copyright (C) 2019 The Authors
 
-Authors: Rishvanth K. Prabakar
+Authors: Rishvanth K. Prabakar and Andrew D. Smith
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
