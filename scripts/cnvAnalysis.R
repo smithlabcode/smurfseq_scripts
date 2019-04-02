@@ -199,8 +199,8 @@ PlotSegment <- function(cur.ratio, cur.ratio.good, sample.name) {
   chr <- cur.ratio.good$chrom
   chr.shift <- c(chr[-1], chr[length(chr)])
 
-  vlines <- c(1, cur.ratio$abspos[which(chr != chr.shift) + 1],
-              cur.ratio$abspos[nrow(cur.ratio)])
+  vlines <- c(1, cur.ratio.good$abspos[which(chr != chr.shift) + 1],
+              cur.ratio.good$abspos[nrow(cur.ratio.good)])
   hlines <- c(0.5, 1.0, 1.5, 2.0)
   chr.text <- c(1:22, "X", "Y")
   vlines.shift <- c(vlines[-1], 4 * 10^9)
