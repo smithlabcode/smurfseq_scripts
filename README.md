@@ -14,8 +14,8 @@ follows procedures already used in other publications. We first map
 the SMURF-seq reads using BWA:
 ```
 bwa mem -x ont2d -k 12 -W 12 \
-    -A 4 -B 10 -O 6 -E 3 -T 120 bwa-mem/index/hg19.fa smurf_reads.fa
-    > mapped_smurf_reads.sam
+    -A 4 -B 10 -O 6 -E 3 -T 120 bwa-mem/index/hg19.fa \ 
+    smurf_reads.fa > mapped_smurf_reads.sam
 ```
 The parameters for the Smith-Waterman scoring ('A', 'B', 'O' and 'E')
 were determined using the simulation approach outined below (see also
@@ -25,10 +25,17 @@ seeds. The 'W' indicates to discard a chain if seed bases are shorter
 than this value. The 'k' and 'W' are set to be liberal to catch and
 evaluate as many candidate mappings as possible.
 
-Then the mapped fragments are given to a script that obtains the
-counts of reads in bins:
+The mapped fragments are given to a script that filters ambiguously
+mapped fragments:
 ```
-./getBinCounts.py -i mapped_smurf_reads.sam -c hg19.chrom.sizes \
+./filterAlnScoreAndQual.py -i mapped_smurf_reads.sam \
+  -o unambig_smurf_frags.sam -s 120 -q 1
+```
+
+Then the remaining fragments are given to a script that obtains 
+the counts of reads in bins:
+```
+./getBinCounts.py -i unambig_smurf_frags.sam -c hg19.chrom.sizes \
     -b bins_5k_hg19.bed -o bin_counts.bed -s bin_stats.txt
 ```
 The input file `mapped_smurf_reads.sam` is just the mapped reads
