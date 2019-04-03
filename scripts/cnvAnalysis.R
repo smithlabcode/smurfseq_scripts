@@ -1,18 +1,26 @@
 #!/usr/bin/env Rscript
 
-# cbs_smurf.r: xxxxxx
+# cnvAnalysis.R: Adapted from "SRR054616.cbs.r" supplemetary program
+# 12 of Baslan, Timour, et al. "Genome-wide copy number analysis of
+# single cells." Nature protocols 7.6 (2012): 1024.
 #
-# Copyright (C) 2019 Rish Prabakar and Andrew D Smith
+# Functions RemoveSegment and SDUndoAll are adapted from the
+# modification to supplemetary program 12 by Jude Kendall.
+#
+# Copyright (C) 2019 Rish Prabakar, Wenzheng Li and Andrew D Smith
+#
+# Authors: Rish Prabakar, Wenzheng Li and Andrew D Smith
+#          Includes code written by Jude Kendall
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
 
 library("DNAcopy")
 
@@ -219,17 +227,10 @@ PlotSegment <- function(cur.ratio, cur.ratio.good, sample.name) {
        xaxt="n", xlab="Genome Position Gb",
        yaxt="n", ylab="Ratio", col="#517FFF", cex=0.01)
 
-  # axis(1, at=x.at, labels=x.labels)
   axis(2, at=y.at, labels=y.labels)
-  # lines(x=cur.ratio.good$abspos, y=cur.ratio.good$lowratio, col="#CCCCCC")
-  # points(x=cur.ratio.good$abspos, y=cur.ratio.good$seg.mean.LOWESS,
-  # col="#0000AA")
   lines(x=cur.ratio.good$abspos, y=cur.ratio.good$seg.mean.LOWESS,
         col="red", cex=1.0)
-  ## abline(h=hlines)
-  ## abline(v=vlines)
   abline(v=vlines, lwd=0.1, col="grey")
-  ## mtext(chr.text, at = chr.at)
   dev.off()
 }
 
@@ -361,14 +362,14 @@ main <- function() {
   cur.ratio = cbs.seg$ratio
   cur.ratio.good = cbs.seg$ratio.bad
   segs = cbs.seg$segs
-  # plot segment
+
+  ## plot segment
   PlotSegment(cur.ratio, cur.ratio.good, sample.name)
-  # save results
-  write.table(cur.ratio.good, sep="\t",
-              file=sprintf("%s.data.txt", sample.name),
+
+  ## save results
+  write.table(cur.ratio.good, sep="\t", file=sprintf("%s.data.txt", sample.name),
               quote=F, row.names=F)
-  write.table(segs, sep="\t",
-              file=sprintf("%s.short.txt", sample.name),
+  write.table(segs, sep="\t", file=sprintf("%s.short.txt", sample.name),
               quote=F, row.names=F)
 }
 
