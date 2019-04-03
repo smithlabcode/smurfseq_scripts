@@ -14,7 +14,8 @@ follows procedures already used in other publications. We first map
 the SMURF-seq reads using BWA:
 ```
 bwa mem -x ont2d -k 12 -W 12 \
-    -A 1 -B 2 -O 1 -E 1 -T 30 bwa-mem/index/hg19.fa smurf_reads.fa
+    -A 4 -B 10 -O 6 -E 3 -T 120 bwa-mem/index/hg19.fa smurf_reads.fa
+    > mapped_smurf_reads.sam
 ```
 The parameters for the Smith-Waterman scoring ('A', 'B', 'O' and 'E')
 were determined using the simulation approach outined below (see also
