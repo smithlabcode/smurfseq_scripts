@@ -14,7 +14,7 @@ follows procedures already used in other publications. We first map
 the SMURF-seq reads using BWA:
 ```
 bwa mem -x ont2d -k 12 -W 12 \
-    -A 4 -B 10 -O 6 -E 3 -T 120 bwa-mem/index/hg19.fa \ 
+    -A 4 -B 10 -O 6 -E 3 -T 120 bwa-mem/index/hg19.fa \
     smurf_reads.fa > mapped_smurf_reads.sam
 ```
 The parameters for the Smith-Waterman scoring ('A', 'B', 'O' and 'E')
@@ -32,7 +32,7 @@ mapped fragments:
   -o unambig_smurf_frags.sam -s 120 -q 1
 ```
 
-Then the remaining fragments are given to a script that obtains 
+Then the remaining fragments are given to a script that obtains
 the counts of reads in bins:
 ```
 ./getBinCounts.py -i unambig_smurf_frags.sam -c hg19.chrom.sizes \
@@ -52,21 +52,22 @@ counts divided by the average reads per bin. This information was
 determined based on what is required in the next script.
 
 In the next step we use an adaptation of a script originally due to
-ASDF.
+Timour et al. (Nat. Protocols, 2014). The script is run
+as follows:
 ```
 ./cnvAnalysis.R bin_counts.bed SampleName bins_5k_hg19_gc.txt bins_5k_hg19_exclude.txt
 ```
-The input file `bin_counts.bed` is the same as described above. The input file 
-`bins_5k_hg19_gc.txt` is the GC content of each bin. The input `bins_5k_hg19_exclude.txt`
-is used to exclude certain parts of the genome that attract an unusual amount of reads. 
-The format is simply the line numbers, in the corresponding bed file, of the bins
-to exclude from the CNV analysis. The first output is a PDF file 
-`{SampleName}.5k.wg.nobad.pdf` for the CNV profile. In addition,
-two tables are saved: one table 
-`{SampleName}.hg19.5k.nobad.varbin.data.txt` with the information
-(chromosome, genome position,  GC content, bin count, segmented value) for each bin, and 
-the other table `{SampleName}.hg19.5k.nobad.varbin.short.txt`
-summerizing the breakpoints in the CNV profile.
+The input file `bin_counts.bed` is the same as described above. The
+input file `bins_5k_hg19_gc.txt` is the GC content of each bin. The
+input `bins_5k_hg19_exclude.txt` is used to exclude certain parts of
+the genome that attract an unusual amount of reads.  The format is
+simply the line numbers, in the corresponding bed file, of the bins to
+exclude from the CNV analysis. The first output is a PDF file
+`SampleName.pdf` for the CNV profile. In addition, two tables are
+saved: one table `SampleName.data.txt` with the information
+(chromosome, genome position, GC content, bin count, segmented value)
+for each bin, and the other table `SampleName.short.txt` summerizing
+the breakpoints in the CNV profile.
 
 ## Simulating SMURF-seq reads for evaluating mappers
 
