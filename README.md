@@ -157,7 +157,8 @@ well it recovers the known mapping locations. The steps are as follows.
     following non-standard libraries are used: pysam (we used 0.15.0) and
     numpy (we used 1.15.0).
 
-* [R:] The R script `cnvAnalysis.R` uses the `DNAcopy` library.
+* [R:] The R script `cnvAnalysis.R` uses the [DNAcopy](https://bioconductor.org/packages/release/bioc/html/DNAcopy.html) library.
+    > Seshan VE, Olshen A (2018). DNAcopy: DNA copy number data analysis. R package version 1.56.0.
 
 * [Software tools:] For the simulations/valuations we require
     `bedtools` (we used v2.26.0). We also require the `deadzones`
