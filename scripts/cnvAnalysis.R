@@ -213,8 +213,6 @@ PlotSegment <- function(cur.ratio, cur.ratio.good, sample.name) {
   chr.text <- c(1:22, "X", "Y")
   vlines.shift <- c(vlines[-1], 4 * 10^9)
   chr.at <- vlines + (vlines.shift - vlines) / 2
-  x.at <- c(0, 0.5, 1, 1.5, 2, 2.5, 3) * 10^9
-  x.labels <- c("0", "0.5", "1.0", "1.5", "2.0", "2.5", "3.0")
   y.at <- c(0.005, 0.020, 0.100, 0.500, 1.000, 2.000, 10, 100)
   y.labels <- c("0.005", "0.020", "0.100", "0.5", "1", "2", "10", "100")
 
@@ -224,12 +222,13 @@ PlotSegment <- function(cur.ratio, cur.ratio.good, sample.name) {
   plot(x=cur.ratio.good$abspos,
        y=cur.ratio.good$lowratio,
        log="y", main=sample.name,
-       xaxt="n", xlab="Genome Position Gb",
+       xaxt="n", xlab="Genome Position",
        yaxt="n", ylab="Ratio", col="#517FFF", cex=0.01)
 
-  axis(2, at=y.at, labels=y.labels)
   lines(x=cur.ratio.good$abspos, y=cur.ratio.good$seg.mean.LOWESS,
         col="red", cex=1.0)
+  axis(2, at=y.at, labels=y.labels)
+  mtext(chr.text, at=chr.at, side=1, cex=0.4)
   abline(v=vlines, lwd=0.1, col="grey")
   dev.off()
 }
@@ -254,7 +253,9 @@ CBSSegment01 <- function(varbin.gc, bad.bins.file,
   ## positions. The "ratio" column present in the input file will be
   ## over-written shortly.
   cur.ratio <- read.table(varbin.data, header=F)
-  names(cur.ratio) <- c("chrom", "chrompos", "abspos", "bincount", "ratio")
+  names(cur.ratio) <- c("chrom", "chrompos", "chromendpos", "bincount", "ratio")
+  cur.ratio$abspos <- cumsum(c(0,
+                      head(cur.ratio$chromendpos - cur.ratio$chrompos, -1)))
   cur.ratio$chrom <- chrom.numeric
 
   ## Take the fractional counts after using Laplaces correction
