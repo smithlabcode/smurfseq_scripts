@@ -336,11 +336,13 @@ CBSSegment01 <- function(varbin.gc, bad.bins.file,
 main <- function() {
 
   # CONSTANTS
-  ## Parameters as in 'Baslan, Timour, et al. "Genome-wide copy number analysis of single
-  ## cells." Nature protocols 7.6 (2012): 1024.'
+  ## Number of permutations for p-value computation
+  kNPermutations  <- 1000 
+  ## Significance level for the test to accept segment change points
   kAlphaValue  <- 0.02
-  kNPermutations  <- 1000
+  ## Number of standard deviations between mean ratio to keep a segment
   kStandardDev <- 0.5
+  ## Minimum number of bins for a changed segment
   kMinWidth <- 4
 
   args = commandArgs(trailingOnly=TRUE)
