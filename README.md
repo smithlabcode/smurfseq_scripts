@@ -29,8 +29,13 @@ The mapped fragments are given to a script that filters ambiguously
 mapped fragments:
 ```
 ./filterAlnScoreAndQual.py -i mapped_smurf_reads.sam \
-  -o unambig_smurf_frags.sam -s 120 -q 1
+    -o unambig_smurf_frags.sam -s 120 -q 1
 ```
+
+The input file `mapped_smurf_reads.sam` is just the mapped reads
+(e.g. with BWA). The output file `unambig_smurf_frags.sam`
+contains mapped fragments with mapping quality greater than or equal
+to 1.
 
 Then the remaining fragments are given to a script that obtains
 the counts of reads in bins:
@@ -38,8 +43,8 @@ the counts of reads in bins:
 ./getBinCounts.py -i unambig_smurf_frags.sam -c hg19.chrom.sizes \
     -b bins_5k_hg19.bed -o bin_counts.bed -s bin_stats.txt
 ```
-The input file `mapped_smurf_reads.sam` is just the mapped reads
-(e.g. with BWA). The file `hg19.chrom.size` is the size of all chroms
+The input file `unambig_smurf_frags.sam` is the same as described above. 
+The file `hg19.chrom.size` is the size of all chroms
 in the reference genome. This file for the hg19 reference is supplied
 in the `data` directory in this repo, and was obtained from the UCSC
 Genome Browser's database. The pre-defined bins file `bins_5k_hg19.bed`
@@ -164,7 +169,7 @@ well it recovers the known mapping locations. The steps are as follows.
     `bedtools` (we used v2.26.0). We also require the `deadzones`
     program from `http://github.com/smithlabcode/utils` but this could
     be substituted for any means of excluding unmappable regions.
-    In our CNV analysis, we used `bwa` (version...).
+    In our CNV analysis, we used `bwa` (0.7.17).
 
 ## Contacts and Bug Reports
 

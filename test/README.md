@@ -1,10 +1,6 @@
-## To test mapping a simulated SMURF-seq read to a
-## small simulated genome
-../map/smurfseq-map.sh map/ref_sim.fa map/read_sim.fastq
+## To test mapping simulated SMURF-seq reads to a small simulated genome
+A simulated reference genome `ref_sim.fa` has been indexed with BWA-MEM.
+`read_sim.fastq` contains simulated reads.
 
-## Generate CNV profile
-../cnv/cnv-5k.sh map/read_sim.fastq.2x.sam test_cnv
-
-## To test mapping a simulated-read to the human
-## genome
-../map/smurfseq-map.sh [path to human genome] map/read_hg.fastq
+## To test mapping simulated reads to the human genome
+`read_hg.fastq` contains simulated reads from the human genome.
