@@ -34,8 +34,8 @@ def revcomp(seq):
 
 
 ## functions below use the cigar string as the argument "a" and the
-## [0] element indictes m+mm/ins/del as 0/1/2. The [1] element
-## indicates the length of the insertion or deletion (or 0 if m/mm).
+## [0] element indictes m+mm/ins/del/soft-clip/hard-clip as 0/1/2/4/5.
+## The [1] element indicates the length of the operation.
 def notDeletion(a):
     return a[0] == 0 or a[0] == 1
 
@@ -45,7 +45,11 @@ def isInsertion(a):
 def operationSize(a):
     return a[1]
 
-def findFragEndInReference(read, fragStart, fragEnd,
+def isClipped(a):
+    return a[0] == 4 or a[0] == 5
+
+
+def findFragEndInReference(cigarTuples, fragStart, fragEnd,
                            refStart, cigarIdx, cigarOffset):
 
     refEnd = refStart
@@ -55,8 +59,8 @@ def findFragEndInReference(read, fragStart, fragEnd,
     # from the previous fragment; after this step, the cigarOffset
     # will be 0 unless the remaining part of the current
     # match/insertion is longer than the size of a fragment
-    if cigarIdx < len(read.cigartuples) and cigarOffset > 0:
-        remaining = operationSize(read.cigartuples[cigarIdx]) - cigarOffset
+    if cigarIdx < len(cigarTuples) and cigarOffset > 0:
+        remaining = operationSize(cigarTuples[cigarIdx]) - cigarOffset
         fragSize = fragEnd - fragStart
         if remaining <= fragSize:
             refEnd += remaining
@@ -74,19 +78,19 @@ def findFragEndInReference(read, fragStart, fragEnd,
     # be set to non-zero, which means the cigarIndex is not
     # incremented, so the same cigar entry will be used in the next
     # call to this function.
-    while cigarIdx < len(read.cigartuples) and fragPos < fragEnd:
-        opSize = operationSize(read.cigartuples[cigarIdx])
-        if notDeletion(read.cigartuples[cigarIdx]):
+    while cigarIdx < len(cigarTuples) and fragPos < fragEnd:
+        opSize = operationSize(cigarTuples[cigarIdx])
+        if notDeletion(cigarTuples[cigarIdx]):
             # not deletion in query, advance ref and frag
             fragRemaining = (fragEnd - fragPos)
             if opSize <= fragRemaining:
-                if not isInsertion(read.cigartuples[cigarIdx]):
+                if not isInsertion(cigarTuples[cigarIdx]):
                     refEnd += opSize
                 fragPos += opSize
                 cigarIdx += 1
                 cigarOffset = 0
             else:
-                if not isInsertion(read.cigartuples[cigarIdx]):
+                if not isInsertion(cigarTuples[cigarIdx]):
                     refEnd += fragRemaining
                 fragPos += fragRemaining
                 cigarOffset += fragRemaining
@@ -117,12 +121,23 @@ def main():
 
             fragStart = randint(0, args.fragLen-1) # first frag start
             fragEnd = fragStart + args.fragLen # first frag end
-            refStart = read.reference_start # first ref start
+            # if a read has clipped bases, it is always indicated in the
+            # first cigar tuple
             cigarIdx = 0
+            if (isClipped(read.cigartuples[cigarIdx])):
+                cigarIdx += 1
             cigarOffset = 0
+            # reference start location of the first fragment is the
+            # reference end location of the "fragment" that was skipped
+            # due to the random offset for the first fragment
+            refStart, cigarIdx, cigarOffset = \
+                findFragEndInReference(read.cigartuples, 0, fragStart,
+                                        read.reference_start, cigarIdx,
+                                        cigarOffset)
+
             while fragEnd < len(read.query_alignment_sequence):
                 refEnd, cigarIdx, cigarOffset = \
-                    findFragEndInReference(read, fragStart, fragEnd,
+                    findFragEndInReference(read.cigartuples, fragStart, fragEnd,
                                            refStart, cigarIdx, cigarOffset)
                 fragSeq = read.query_alignment_sequence[fragStart:fragEnd]
                 if read.is_reverse: fragSeq = revcomp(fragSeq)
